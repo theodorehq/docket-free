@@ -1,0 +1,22 @@
+# Netlify deployment.
+# The API lives in netlify/functions/, which are thin adapters over the
+# handlers in api/. See docs/hosting.md.
+
+[build]
+  command = "node scripts/build.mjs"
+  publish = "dist"
+  functions = "netlify/functions"
+
+[build.environment]
+  NODE_VERSION = "24"
+
+# Docket's URLs all end in a slash.
+[[redirects]]
+  from = "/api/submit"
+  to = "/api/submit/"
+  status = 301
+
+[[redirects]]
+  from = "/api/vote"
+  to = "/api/vote/"
+  status = 301

@@ -1,0 +1,44 @@
+{
+  "_comment": [
+    "Copy this file to products.json and edit that copy.",
+    "products.example.json belongs to Docket and is replaced by updates.",
+    "products.json belongs to you and is never touched by an update.",
+    "",
+    "Add one entry per product you support. There is no limit, on any tier.",
+    "",
+    "  id        url-safe, lowercase, no spaces. Becomes /<id>/ and prefixes",
+    "            every item id, so pick it once and do not change it later.",
+    "  name      shown everywhere a human reads it",
+    "  tagline   one sentence, used on the product page and in search results",
+    "  platform  optional pill beside the name: macOS, iOS, Web, API, and so on",
+    "  url       optional link back to the product's own site",
+    "  accent    the product's colour, used across its board",
+    "  icon      optional path under assets/. Falls back to a coloured monogram",
+    "  sections  which boards this product has, in sidebar order"
+  ],
+
+  "products": [
+    {
+      "id": "aurora",
+      "name": "Aurora",
+      "tagline": "One shared inbox for your whole team.",
+      "cardTagline": "One shared inbox.",
+      "platform": "Web",
+      "url": "",
+      "accent": "#44586B",
+      "icon": "",
+      "sections": ["overview", "bugs", "features", "roadmap", "changelog", "testimonials", "faq"]
+    },
+    {
+      "id": "pico",
+      "name": "Pico",
+      "tagline": "A very small timer that lives in your menu bar.",
+      "cardTagline": "A very small timer.",
+      "platform": "macOS",
+      "url": "",
+      "accent": "#6E7F8F",
+      "icon": "",
+      "sections": ["overview", "bugs", "features", "changelog", "faq"]
+    }
+  ]
+}

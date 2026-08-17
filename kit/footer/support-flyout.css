@@ -1,0 +1,222 @@
+/* ============================================================
+   Support Centre Footer Flyout - canonical shared stylesheet.
+   Source of truth: prototypes/footer-flyout-final-2026-07-04
+   (approved design). Every class is .scf- namespaced so it can
+   land on any product site without colliding with site CSS.
+
+   CSS only, no JS behaviour. Opens upward with a 70ms hover
+   intent delay; an invisible bridge spans the 12px gap so the
+   pointer can travel into the panel without flicker;
+   :focus-within holds it open for keyboard users. The panel is
+   a Miniature Support Centre: real app icon + product name
+   header (no arrow glyph), accent immersion wash, subtle corner
+   aurora breathing in the product accent, six icon chips in two
+   columns fanning in with a staggered spring. While open, the
+   rest of the footer softly blurs and dims (.scf-blur overlay
+   inside the .scf-host footer). Reduced motion safe; on touch
+   and narrow screens the panel and blur never exist and the
+   trigger stays a plain link.
+
+   THEME TOKENS: this file declares no colours. The material
+   tokens (--scf-*) are emitted per site by snippet.mjs
+   (themeWiringCss), applied to the .scf-host element under that
+   site's own theme selectors ([data-theme], prefers-color-scheme
+   or a static theme) so custom properties inherit down into the
+   trigger, panel and blur overlay. The installer appends that
+   wiring below this block when it writes the per-site copy.
+
+   Tokens consumed here:
+   --scf-accent        raw product accent (e.g. #FF9500)
+   --scf-accent-ink    readable accent for text on the panel
+   --scf-ring          1px panel ring
+   --scf-ink           primary panel ink
+   --scf-ink-2         secondary panel ink (chip glyphs)
+   --scf-sep           hairline separator
+   --scf-shadow        large soft panel shadow
+   --scf-bg            panel material
+   --scf-chip-bg       chip fill
+   --scf-chip-ring     chip inset ring
+   --scf-aur           aurora opacity (0.20 light / 0.34 dark)
+   --scf-blur-tint     footer blur overlay tint
+   ============================================================ */
+
+/* ---- Wrapper + trigger ---- */
+.scf {
+  position: relative;
+  z-index: 30;
+  --scf-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --scf-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.scf-trigger { cursor: pointer; }
+
+/* ---- Positioner: opens upward, invisible hover bridge ---- */
+.scf-pos {
+  position: absolute; bottom: calc(100% + 12px);
+  visibility: hidden; pointer-events: none; z-index: 60;
+  transition: visibility 0s linear .18s;
+}
+.scf-center .scf-pos { left: 50%; transform: translateX(-50%); }
+.scf-left .scf-pos { left: var(--scf-anchor-x, -10px); }
+.scf-pos::after { content: ''; position: absolute; top: 100%; left: -14px; right: -14px; height: 20px; }
+
+/* ---- Panel shell: motion + Miniature Support Centre material ---- */
+.scf-panel {
+  width: 282px;
+  padding: 9px;
+  border-radius: 15px;
+  position: relative;
+  overflow: hidden; /* clips the wash and the aurora to the panel radius */
+  background: var(--scf-bg);
+  box-shadow:
+    0 0 0 1px var(--scf-ring),
+    0 1px 2px rgba(21, 27, 40, .05),
+    var(--scf-shadow);
+  opacity: 0;
+  transform: translateY(12px) scale(.94);
+  transform-origin: bottom center;
+  transition: opacity .16s ease, transform .3s var(--scf-ease-spring);
+  text-align: left;
+}
+/* Self-defending panel font. Host footer rules (e.g. an inline
+   `.footer-col a { font-family: ... }`) directly target the panel's own
+   header and chip anchors and would beat plain inheritance, so the panel
+   text must assert Plus Jakarta Sans across its whole subtree. Scoped to
+   `.scf-panel *` it cannot leak out, and it saves patching every site's
+   inline footer styles. The trigger is deliberately excluded so it keeps
+   matching the host footer's own link font. */
+.scf-panel, .scf-panel * {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif !important;
+}
+.scf-left .scf-panel { transform-origin: bottom left; }
+/* Downward variant: the panel opens BELOW the trigger instead of above it,
+   for triggers that sit near the top of their container (e.g. a top-of-page
+   Support Centre button). The hover bridge moves to the panel's top edge. */
+.scf-down .scf-pos { bottom: auto; top: calc(100% + 12px); }
+.scf-down .scf-pos::after { top: auto; bottom: 100%; }
+.scf-down .scf-panel { transform: translateY(-12px) scale(.94); transform-origin: top center; }
+.scf:hover .scf-pos, .scf:focus-within .scf-pos, .scf.scf-open .scf-pos {
+  visibility: visible; pointer-events: auto; transition-delay: .07s;
+}
+.scf:hover .scf-panel, .scf:focus-within .scf-panel, .scf.scf-open .scf-panel {
+  opacity: 1; transform: none; transition-delay: .07s, .07s;
+}
+.scf-panel a { text-decoration: none; }
+.scf-panel a:focus-visible { outline: 2px solid var(--scf-accent-ink); outline-offset: 2px; border-radius: 8px; }
+.scf-trigger:focus-visible { outline: 2px solid var(--scf-accent-ink); outline-offset: 3px; border-radius: 6px; }
+
+/* Accent immersion wash across the panel top */
+.scf-panel::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 76px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--scf-accent) 14%, transparent), transparent);
+  pointer-events: none;
+}
+/* Subtle aurora: a faint accent bloom breathing in the top-right corner */
+.scf-panel::after {
+  content: ''; position: absolute; top: -58px; right: -48px;
+  width: 180px; height: 180px; border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--scf-accent) 70%, transparent), transparent 70%);
+  filter: blur(26px);
+  opacity: var(--scf-aur);
+  animation: scf-aurora-breathe 7s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes scf-aurora-breathe {
+  0%, 100% { transform: scale(1); opacity: calc(var(--scf-aur) * 0.68); }
+  50% { transform: scale(1.16); opacity: var(--scf-aur); }
+}
+
+/* ---- Header: app icon + name, no arrow glyph ---- */
+.scf-head {
+  position: relative;
+  display: flex; align-items: center; gap: 10px;
+  padding: 6px 7px 11px;
+}
+.scf-icon { width: 24px; height: 24px; object-fit: contain; flex-shrink: 0; transition: transform .28s var(--scf-ease-spring); }
+.scf-head:hover .scf-icon { transform: scale(1.09) rotate(-3deg); }
+/* Optional dark-theme icon variant: hidden until the
+   site's theme wiring swaps it in under that site's dark scopes. */
+.scf-icon-dark { display: none; }
+.scf-names { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.scf-name { font-size: 13.5px; font-weight: 700; letter-spacing: -0.01em; color: var(--scf-ink); line-height: 1.15; }
+.scf-sub { font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--scf-accent-ink); line-height: 1.2; }
+.scf-rule { height: 1px; margin: 0 3px 9px; background: var(--scf-sep); position: relative; }
+
+/* ---- Chip grid: staggered spring fan-in ----
+   Stagger delays live in the base transition so chip hover states
+   (background, ring, colour) stay instant; the hover lift is on
+   the inner wrapper so it never fights the stagger transform. */
+.scf-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; position: relative; }
+.scf-chip {
+  display: block;
+  padding: 8.5px 10px;
+  border-radius: 10px;
+  font-size: 12.5px; font-weight: 600; letter-spacing: -0.005em;
+  color: var(--scf-ink);
+  background: var(--scf-chip-bg);
+  box-shadow: inset 0 0 0 1px var(--scf-chip-ring);
+  opacity: 0;
+  transform: translateY(10px) scale(.9);
+  transition:
+    opacity .16s ease calc(var(--scf-i) * 25ms + 85ms),
+    transform .22s var(--scf-ease-spring) calc(var(--scf-i) * 25ms + 85ms),
+    background-color .18s var(--scf-ease-out),
+    box-shadow .18s var(--scf-ease-out),
+    color .18s var(--scf-ease-out);
+}
+.scf:hover .scf-chip, .scf:focus-within .scf-chip, .scf.scf-open .scf-chip {
+  opacity: 1; transform: none;
+}
+.scf-chip-in { display: flex; align-items: center; gap: 8px; min-width: 0; transition: transform .18s var(--scf-ease-out); }
+.scf-chip-in .scf-gx { color: var(--scf-ink-2); transition: color .18s var(--scf-ease-out); }
+.scf-chip:hover {
+  background: color-mix(in srgb, var(--scf-accent) 10%, var(--scf-bg));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--scf-accent) 38%, transparent);
+  color: var(--scf-accent-ink);
+}
+.scf-chip:hover .scf-chip-in { transform: translateY(-1px); }
+.scf-chip:hover .scf-gx { color: var(--scf-accent-ink); }
+
+/* Glyph boxes: fixed 16px so labels rag on a shared axis */
+.scf-gx { flex-shrink: 0; width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; }
+.scf-gx svg { width: 15px; height: 15px; display: block; }
+
+/* ---- Footer focus blur ----
+   While the flyout is open, the rest of the footer softly blurs
+   and dims. The overlay sits inside the footer (.scf-host is
+   position: relative), above the footer content (z-index 5) but
+   below the trigger and panel (.scf is z-index 30).
+   pointer-events: none throughout, so the footer stays clickable
+   the instant the flyout closes. */
+.scf-host { position: relative; }
+.scf-blur {
+  position: absolute; inset: 0;
+  border-radius: inherit;
+  z-index: 5;
+  pointer-events: none;
+  background: var(--scf-blur-tint);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+  opacity: 0;
+  transition: opacity .25s ease;
+}
+.scf-host:has(.scf:hover, .scf:focus-within, .scf.scf-open) .scf-blur {
+  opacity: 1;
+  transition-delay: .07s; /* matches the hover-intent delay */
+}
+
+/* ---- Reduced motion: panel and chips appear instantly, the
+   aurora holds still. .scf-blur keeps its opacity-only fade,
+   which is reduced-motion safe. ---- */
+@media (prefers-reduced-motion: reduce) {
+  .scf-pos, .scf-panel, .scf-panel *,
+  .scf-panel::before, .scf-panel::after { transition: none !important; animation: none !important; }
+  .scf-panel { transform: none; }
+  .scf-chip { transform: none; }
+}
+
+/* ---- Touch and narrow screens: the flyout and the footer blur
+   never exist; the trigger stays a plain link straight to the
+   product's support overview. ---- */
+@media (hover: none), (pointer: coarse), (max-width: 720px) {
+  .scf-pos, .scf-blur { display: none; }
+}

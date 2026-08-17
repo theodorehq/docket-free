@@ -1,0 +1,14 @@
+{
+  "name": "docket",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "check": "node scripts/doctor.mjs",
+    "test": "node scripts/test-api-local.mjs",
+    "update": "node scripts/update.mjs",
+    "validate": "node scripts/validate-data.mjs",
+    "migrate": "node scripts/migrate.mjs"
+  }
+}

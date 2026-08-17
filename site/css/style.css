@@ -1,0 +1,4106 @@
+/* ============================================================
+   Docket - production stylesheet.
+   Lifted near-verbatim from the approved design mockup at
+   prototypes/support-dashboard-2026-07-02/refined.html.
+   Product accent variables (--c-<product>) and the
+   body[data-product] accent bindings are generated per page
+   from products.json at build time, so adding a product needs
+   no CSS change. Static-site additions (stretched card links,
+   the submission modal, form confirmations) live at the end.
+   ============================================================
+   Original mockup design notes:
+   Cool neutral canvas (layered shadows + ambient glow field)
+   + deeper per-product accent immersion. Kanban boards share
+   the overview panels' design language, full multi-bullet
+   release notes on the changelog timeline, section-level add
+   buttons, item detail views with reply threads and a comment
+   form, FAQ subtitles, delight pass. v8: equal-height home
+   card stat strips and overview panels, concentric square "+"
+   buttons, quiet "Search /" keyboard-hint chips instead of
+   visible search bars, testimonial country flags, and a
+   redesigned detail top bar (bordered back button + context).
+   v9: glassy landing-page wordmark, subgrid stat strips that
+   grow together, FAQ overview rows that fill their panel, and
+   section toolbars merged into the header row.
+   v10: home card bodies hug their content at every width (the
+   tagline-to-strip gap stays constant), ink wordmark on home
+   with product-tinted gradient fills inside a product, 4-row
+   FAQ overview preview, accent highlight rings on search
+   matches, testimonials newest-first everywhere, and section
+   intent carrying from consolidated views into products.
+   v11: framed layout - the whole window is one continuous
+   accent-breathing frame surface, the sidebar sits glassily on
+   it (transparent, subtle vertical tint, backdrop blur), and
+   the content lives in a rounded panel inset from the top,
+   right, and bottom edges, scrolling inside while the frame
+   stays put. Slightly larger wordmark, contextual add buttons
+   only (no generic New Post, no add on Roadmap or Changelog),
+   and the home proof line retired.
+   ============================================================ */
+
+/* Registered so accent changes interpolate smoothly everywhere,
+   including inside color-mix() and gradients (the atmosphere wash). */
+@property --accent {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #62676f;
+}
+
+/* Registered so the sidebar's glassy tint strength cross-fades
+   smoothly when stepping into and out of a product. */
+@property --side-tint {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 5%;
+}
+
+:root {
+  --font: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --accent-ms: 400ms;
+  --pill-radius: 6px; /* soft-cornered pills/badges (was fully round 999px) */
+  /* Product brand colours (--c-<product>) are injected per page
+     from products.json - see the generated style block in <head>. */
+}
+
+[data-theme="light"] {
+  /* v11 frame: cool neutral field hosting the sidebar, with the
+     content floating inside a white panel */
+  --canvas: #f9fafc;
+  --panel: #ffffff;
+  --surface: #ffffff;
+  --surface-hover: #f6f7f9;
+  --inset: #e9ebef;
+  --ink: #1a1c20;
+  --ink-2: #676d78;
+  --ink-3: #969ca7;
+  --home-ink: #42474f;
+  --home-sub: #71767f;
+  --hairline: rgba(20, 24, 33, 0.08);
+  --hairline-strong: rgba(20, 24, 33, 0.14);
+  --sidebar-hover: rgba(20, 24, 33, 0.045);
+  --glow-2: rgba(132, 152, 191, 0.07);
+
+  --c-home: #545962;
+
+  /* Accent mix recipe: darken for text so amber passes contrast on white */
+  --accent-mix-base: #171a20;
+  --accent-mix-pct: 55%;
+  --accent-tint-pct: 8%;
+  --accent-tint2-pct: 14%;
+  --on-accent: #ffffff;
+  /* Whisper-level: the frame outside the panel carries the product
+     colour; the panel interior stays essentially white. */
+  --wash-pct: 4%;
+  --wash-soft: 1.5%;
+
+  --shadow-card:
+    0 1px 1px rgba(21, 27, 40, 0.03),
+    0 3px 8px rgba(21, 27, 40, 0.04),
+    0 12px 28px -10px rgba(21, 27, 40, 0.07);
+  --shadow-card-hover:
+    0 1px 2px rgba(21, 27, 40, 0.04),
+    0 6px 16px rgba(21, 27, 40, 0.06),
+    0 24px 48px -16px rgba(21, 27, 40, 0.13);
+  --shadow-panel:
+    0 1px 2px rgba(21, 27, 40, 0.03),
+    0 12px 34px -14px rgba(21, 27, 40, 0.10);
+
+  /* Kanban column glyph colours: review gets a dusty slate-teal,
+     done a properly vibrant green so the check reads at a glance */
+  --st-review: #47807d;
+  --st-done: #1aa04e;
+
+  /* Whisper bar marks: saturated status colours for the home cards'
+     3px segmented progress bar (and its All Clear tick) */
+  --bar-review: #c88a04;
+  --bar-planned: #5b82a6;
+  --bar-progress: #7a6ce0;
+  --bar-done: #1aa04e;
+
+  --pill-review-bg: #fbf3db;   --pill-review-text: #8a5d00;
+  --pill-planned-bg: #e8eef5;  --pill-planned-text: #3f617f;
+  --pill-progress-bg: #efecfc; --pill-progress-text: #5747c0;
+  --pill-done-bg: #e9f2e8;     --pill-done-text: #33683a;
+  --pill-declined-bg: #edeef1; --pill-declined-text: #757a84;
+  --tag-bug-bg: #fdecea;       --tag-bug-text: #a1352e;
+  --tag-feature-bg: #e5f1fd;   --tag-feature-text: #1f639c;
+}
+
+[data-theme="dark"] {
+  /* v11 frame: deep cool graphite field, panel a shade lifted so
+     the surfaces inside step lighter again */
+  --canvas: #121318;
+  --panel: #17191f;
+  --surface: #1b1d24;
+  --surface-hover: #20232b;
+  --inset: #0e1015;
+  --ink: #e9ebef;
+  --ink-2: #9ba1ac;
+  --ink-3: #717783;
+  --home-ink: #d7dbe2;
+  --home-sub: #99a0ab;
+  --hairline: rgba(226, 235, 255, 0.09);
+  --hairline-strong: rgba(226, 235, 255, 0.16);
+  --sidebar-hover: rgba(226, 235, 255, 0.05);
+  --glow-2: rgba(122, 144, 194, 0.06);
+
+  --c-home: #c2c8d2;
+
+  /* Lighten accents so they read on the deep field */
+  --accent-mix-base: #eef1f6;
+  --accent-mix-pct: 62%;
+  --accent-tint-pct: 11%;
+  --accent-tint2-pct: 18%;
+  --on-accent: #13151b;
+  --wash-pct: 6%;
+  --wash-soft: 2%;
+
+  --shadow-card:
+    0 1px 1px rgba(0, 0, 0, 0.2),
+    0 4px 10px rgba(0, 0, 0, 0.22),
+    0 16px 36px -12px rgba(0, 0, 0, 0.4);
+  --shadow-card-hover:
+    0 1px 2px rgba(0, 0, 0, 0.25),
+    0 8px 20px rgba(0, 0, 0, 0.3),
+    0 28px 56px -16px rgba(0, 0, 0, 0.55);
+  --shadow-panel:
+    0 1px 2px rgba(0, 0, 0, 0.28),
+    0 16px 44px -18px rgba(0, 0, 0, 0.5);
+
+  --st-review: #6fb5b0;
+  --st-done: #3fd472;
+
+  /* Whisper bar marks lift to the dark pill-text brights so the
+     3px segments stay legible on the deep field */
+  --bar-review: #ddb066;
+  --bar-planned: #9dbbd4;
+  --bar-progress: #a99ef5;
+  --bar-done: #3fd472;
+
+  --pill-review-bg: rgba(226, 178, 100, 0.13);  --pill-review-text: #ddb066;
+  --pill-planned-bg: rgba(139, 170, 198, 0.13); --pill-planned-text: #9dbbd4;
+  --pill-progress-bg: rgba(148, 138, 248, 0.14);--pill-progress-text: #a99ef5;
+  --pill-done-bg: rgba(101, 173, 110, 0.13);    --pill-done-text: #8cc494;
+  --pill-declined-bg: rgba(240, 246, 255, 0.07);--pill-declined-text: #8a909c;
+  --tag-bug-bg: rgba(236, 106, 94, 0.13);       --tag-bug-text: #e08a80;
+  --tag-feature-bg: rgba(94, 156, 242, 0.13);   --tag-feature-text: #85b4ef;
+}
+
+/* Per-product accent, swapped on one wrapper attribute.
+   Derivations are computed on body (per-product board pages set --accent
+   via the body[data-product] rule). */
+body {
+  --accent-ink: color-mix(in srgb, var(--accent) var(--accent-mix-pct), var(--accent-mix-base));
+  --accent-tint: color-mix(in srgb, var(--accent) var(--accent-tint-pct), transparent);
+  --accent-tint-2: color-mix(in srgb, var(--accent) var(--accent-tint2-pct), transparent);
+  --glow-1: color-mix(in srgb, var(--accent) 8%, transparent);
+  /* Deep accent: a dark, saturated take on the product colour for the
+     official-reply pill. Fixed dark base (not theme-mixed) so the pill
+     reads the same rich navy/forest/amber in light and dark. */
+  --accent-deep: color-mix(in oklab, var(--accent) 68%, #0a1222);
+}
+
+body[data-product="home"] { --accent: var(--c-home); }
+/* body[data-product="<id>"] accent bindings are generated per page
+   from products.json - see the style block in <head>. */
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: var(--font);
+  font-size: 14px;
+  line-height: 1.5;
+  /* The frame surface leans toward the active product's accent;
+     the lean deepens when you step inside a product, so the whole
+     frame around the panel breathes the product colour. */
+  --canvas-mix: 2%;
+  --side-tint: 5%;
+  background: color-mix(in srgb, var(--accent) var(--canvas-mix), var(--canvas));
+  /* The stronger top tint spans the WHOLE frame (not just the sidebar
+     column) so the colour wraps continuously around the content panel. */
+  background-image: linear-gradient(180deg, color-mix(in srgb, var(--accent) var(--side-tint), transparent), transparent 62%);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  transition: background-color 400ms var(--ease-out), color 280ms var(--ease-out), --accent 400ms var(--ease-out), --side-tint 400ms var(--ease-out);
+}
+
+body[data-view="board"] { --canvas-mix: 9%; --side-tint: 10%; }
+[data-theme="dark"] body[data-view="board"] { --canvas-mix: 12%; }
+
+/* Ambient glow field (direction-2): two soft radials pinned to the
+   frame, one accent-aware, one cool. They read on the frame margins
+   and through the glassy sidebar; the panel carries its own pair. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(760px 420px at 26% -6%, var(--glow-1), transparent 68%),
+    radial-gradient(680px 400px at 88% 4%, var(--glow-2), transparent 70%);
+}
+
+button { font-family: inherit; font-size: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+input { font-family: inherit; }
+a { color: inherit; text-decoration: none; }
+input, textarea { caret-color: var(--accent-ink); }
+
+::selection { background: var(--accent-tint-2); }
+
+::-webkit-scrollbar { width: 12px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--accent) 26%, transparent);
+  border-radius: 999px;
+  background-clip: padding-box;
+  border: 3px solid transparent;
+}
+::-webkit-scrollbar-thumb:hover { background: color-mix(in srgb, var(--accent) 42%, transparent); background-clip: padding-box; }
+
+:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--accent) 60%, transparent);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+.num { font-variant-numeric: tabular-nums; }
+
+/* ============ Layout ============
+   The window is one continuous frame surface. The sidebar sits
+   directly on it; the content floats in a rounded panel inset from
+   the top, right, and bottom edges and scrolls INSIDE, so the frame
+   never moves. */
+
+.app { position: relative; z-index: 1; display: flex; height: 100vh; }
+
+.main {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  margin: 12px 12px 12px 264px;
+  display: flex;
+  flex-direction: column;
+  background: var(--panel);
+  border: 1px solid var(--hairline);
+  border-radius: 18px;
+  box-shadow: var(--shadow-panel);
+  overflow: hidden;
+  transition: background-color 280ms var(--ease-out), border-color 280ms var(--ease-out);
+}
+
+/* Panel-local ambient glows, clipped by the panel's radius.
+   Softened well below the frame's glows so the panel interior
+   reads essentially white. */
+.main::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(760px 420px at 26% -6%, color-mix(in srgb, var(--glow-1) 35%, transparent), transparent 68%),
+    radial-gradient(680px 400px at 88% 4%, color-mix(in srgb, var(--glow-2) 35%, transparent), transparent 70%);
+}
+
+/* Product atmosphere: light through a window. Amplified inside a
+   product so the accent is unmistakable; a broad soft gradient runs
+   behind the whole content column, inside the panel, and stays put
+   while the content scrolls. Cross-fades on the morph. */
+.main::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(1100px 640px at 55% -170px, color-mix(in srgb, var(--accent) var(--wash-pct), transparent), transparent 74%),
+    linear-gradient(180deg, color-mix(in srgb, var(--accent) var(--wash-soft), transparent), transparent 62%);
+  opacity: 0;
+  transition: opacity 500ms var(--ease-out);
+}
+
+body[data-view="board"] .main::after { opacity: 1; }
+
+.main-scroll {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  /* The bottom inset is small because the footer's Docket pill is meant to
+     sit IN the corner, not to float above it. Content keeps its own space
+     from the footer via .view's bottom margin. */
+  padding: 46px 48px 28px;
+  /* Column flex so the site footer's margin-top: auto pins it to the
+     bottom of the panel on short pages (see "Site footer" below). */
+  display: flex;
+  flex-direction: column;
+  /* Content fades where it meets the panel's edge rather than being cut
+     off mid-letter. A hard clip reads as a rendering fault; a fade reads
+     as material passing under a surface, which is what it is. 22px is
+     enough to see and short enough that nothing at rest is dimmed: the
+     panel's own top padding is 46px and its bottom is 28px. */
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 22px, #000 calc(100% - 22px), transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0, #000 22px, #000 calc(100% - 22px), transparent 100%);
+}
+
+.view { max-width: 992px; width: 100%; flex: 0 0 auto; }
+
+/* ============ Sidebar ============
+   No panel of its own: it sits glassily on the frame surface, a
+   near-transparent vertical tint with a touch of backdrop blur, so
+   sidebar and frame read as one piece around the content panel. */
+
+.sidebar {
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 10; /* stays above animated views if the window is narrow */
+  width: 264px;
+  display: flex;
+  flex-direction: column;
+  padding: 30px 16px 20px;
+  -webkit-backdrop-filter: blur(10px) saturate(1.35);
+  backdrop-filter: blur(10px) saturate(1.35);
+}
+
+
+/* Pinned, like every other block in the stack above the product row. What
+   is above that row decides where it sits, and this was still measured by
+   its own text: a browser that renders the wordmark a little taller pushed
+   the whole product list down and took it out of line with the toolbar. */
+.brand {
+  height: 28px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 10px;
+  margin-bottom: 28px;
+  text-align: left;
+}
+
+.brand-mark {
+  width: 28px; height: 28px;
+  border-radius: 8px;
+  object-fit: contain;
+  flex-shrink: 0;
+  transition: transform 260ms var(--ease-spring);
+}
+
+.brand:hover .brand-mark { transform: scale(1.06) rotate(-4deg); }
+
+/* Sidebar wordmark: Plus Jakarta Sans uppercase, lead words at 800 /
+   HQ at 700, tight -0.04em tracking. On home and consolidated views
+   it is a clean ink fill (theme-appropriate). Inside a product it
+   takes the landing page's gradient text fills, built from the
+   product accent, so the fills ride the registered --accent morph
+   and tint smoothly over the same 400ms. */
+.brand-word {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+  line-height: 0.95;
+  white-space: nowrap;
+}
+
+.bw-lead,
+.bw-tail {
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  /* The wordmark stays the primary ink colour on every view, including
+     inside a product - it never takes the product accent. */
+  background-image: linear-gradient(var(--ink), var(--ink));
+}
+
+.bw-tail { font-weight: 700; }
+
+.side-label {
+  height: 16px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  padding: 0 10px;
+  margin-bottom: 7px;
+}
+
+.side-list { list-style: none; }
+.side-list li + li { margin-top: 1px; }
+
+/* --row-h is the height of one navigable row, and it is an explicit number
+   on purpose.
+
+   This row and the toolbar row in the content area are meant to sit level
+   with each other. Both used to get their height from padding plus whatever
+   the text's line box happened to measure, which lands differently in
+   different browsers: 34.3px here against 35px for the button, and further
+   apart elsewhere. So the two rows lined up on the machine they were tuned
+   on and nowhere else, and no margin could fix it, because the drift was in
+   the heights rather than the positions.
+
+   Anything that must sit on this line sets height: var(--row-h) and centres
+   its own content. Nothing on that line may be sized by its text. */
+:root { --row-h: 34px; }
+
+.side-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  height: var(--row-h);
+  padding: 0 10px;
+  border-radius: 9px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--ink-2);
+  text-align: left;
+  transition: background-color 180ms var(--ease-out), color 180ms var(--ease-out);
+}
+
+.side-item:hover { background: var(--sidebar-hover); color: var(--ink); }
+
+.side-item.is-active {
+  background: var(--accent-tint);
+  color: var(--accent-ink);
+  font-weight: 600;
+}
+
+.side-item .nav-icon {
+  width: 15px; height: 15px;
+  flex-shrink: 0;
+  color: var(--ink-3);
+  transition: color 180ms var(--ease-out), transform 220ms var(--ease-spring);
+}
+
+.side-item:hover .nav-icon { color: var(--ink-2); transform: translateX(1px); }
+.side-item.is-active .nav-icon { color: var(--accent-ink); }
+
+.home-block { margin-bottom: 14px; }
+/* Every block in the column is separated by the same gap, so the sidebar
+   reads as a list of groups rather than one long run with a break in it. */
+.clients-block { margin-bottom: 24px; }
+.products-block { margin-bottom: 24px; }
+
+/* ---------- Add, from the Browse list ----------
+
+   A "+" on the three rows anybody can add to. It lives where you already
+   are when the thought occurs: you are looking at the bug list, so the
+   way to add a bug is on the bug row.
+
+   It appears with the row: hover Bugs and the "+" is there to press. The
+   column stays a clean list until you reach for something, which is
+   Theo's call and the quieter one.
+
+   Two exceptions, both the same rule in different clothes. Keyboard focus
+   counts as reaching for it, so tabbing to it shows it. And a device with
+   no hover at all (every phone and tablet) shows all three permanently,
+   because otherwise the feature would simply not exist there.
+
+   The row is a link and this is a button, so it is a sibling rather than a
+   child: a button inside an anchor is invalid, and it would inherit the
+   row's navigation. */
+
+.board-nav li.has-add { position: relative; }
+
+/* Room on the right for the "+". */
+.board-nav li.has-add .side-item { padding-right: 34px; }
+
+.side-add {
+  position: absolute;
+  top: 50%;
+  right: 5px;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  color: var(--ink-3);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 160ms var(--ease-out), background-color 160ms var(--ease-out),
+              color 160ms var(--ease-out);
+}
+
+.side-add svg { width: 12px; height: 12px; }
+
+li.has-add:hover .side-add,
+.side-add:focus-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* No hover to reach with, so it is simply there. */
+@media (hover: none) {
+  .side-add { opacity: 0.55; pointer-events: auto; }
+}
+
+.side-add:hover,
+.side-add:focus-visible {
+  opacity: 1;
+  background: var(--sidebar-hover);
+  color: var(--accent-ink);
+}
+
+/* On a row that is already the active section, the "+" reads against the
+   accent tint rather than the sidebar. */
+.side-item.is-active ~ .side-add { color: var(--accent-ink); }
+.side-item.is-active ~ .side-add:hover { opacity: 1; background: rgba(255, 255, 255, 0.45); }
+[data-theme="dark"] .side-item.is-active ~ .side-add:hover { background: rgba(255, 255, 255, 0.10); }
+
+
+/* Real app icons */
+.picon {
+  display: block;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.side-item .picon {
+  width: 20px; height: 20px;
+  transition: transform 220ms var(--ease-spring);
+}
+
+.side-item:hover .picon { transform: scale(1.08); }
+
+.count {
+  margin-left: auto;
+  min-width: 21px;
+  padding: 1px 7px;
+  border-radius: var(--pill-radius);
+  text-align: center;
+  font-size: 11px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-3);
+  background: var(--sidebar-hover);
+  transition: background-color 240ms var(--ease-out), color 240ms var(--ease-out);
+}
+
+.side-item.is-active .count {
+  background: var(--accent-tint-2);
+  color: var(--accent-ink);
+}
+
+/* Browsing from home: no number counts on the Browse categories */
+body:not([data-view="board"]) .board-nav .count { display: none; }
+
+/* ============ Views ============ */
+
+.view { display: none; }
+.view.is-active { display: block; animation: view-in 380ms var(--ease-out) both; }
+
+@keyframes view-in {
+  from { opacity: 0; transform: translateY(10px) scale(0.99); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ============ Home view ============ */
+
+.home-head { margin-bottom: 36px; }
+
+.home-head h1 {
+  font-size: 27px;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+  color: var(--home-ink);
+  transition: color 280ms var(--ease-out);
+}
+
+.home-sub {
+  font-size: 14.5px;
+  color: var(--home-sub);
+  margin-top: 6px;
+  max-width: 52ch;
+  transition: color 280ms var(--ease-out);
+}
+
+/* ---- Home stats strip: four tiles, each a green accent icon chip + number +
+   caption. The number+caption block is fitted to the chip height, and each
+   tile is the same height as an app card below. ---- */
+.rf-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 30px;
+}
+
+.rf-cell {
+  --rf-stat: var(--st-done);
+  display: flex;
+  align-items: center;
+  min-height: 71px;
+  padding: 0 16px;
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(20, 24, 33, 0.04);
+  transition:
+    transform 240ms var(--ease-out),
+    box-shadow 240ms var(--ease-out),
+    border-color 240ms var(--ease-out);
+}
+
+[data-theme="dark"] .rf-cell { box-shadow: 0 1px 2px rgba(0, 0, 0, 0.28); }
+
+.rf-cell:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-card);
+  border-color: color-mix(in srgb, var(--rf-stat) 22%, var(--hairline));
+}
+
+/* Chip and number share a top edge; the number+caption column is stretched
+   to the chip's height and pinned top-and-bottom to it. */
+.rf-row { display: flex; align-items: stretch; gap: 13px; }
+
+.rf-ico {
+  flex: none;
+  width: 33px; height: 33px;
+  border-radius: 9px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--rf-stat);
+  background: color-mix(in srgb, var(--rf-stat) 12%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--rf-stat) 20%, var(--hairline));
+}
+
+.rf-i { width: 18px; height: 18px; display: block; }
+
+.rf-body {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-width: 0;
+}
+
+.rf-fig {
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--home-ink);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+/* The "under" symbol on the reply-time tile: lighter and smaller than 1h */
+.rf-lt {
+  font-size: 0.6em;
+  font-weight: 700;
+  color: var(--ink-3);
+  margin-right: 1px;
+  letter-spacing: 0;
+  /* Baseline-aligned, this sits 4.5px low against 18px digits and reads as a
+     subscript. The measured raise that centres its ink on theirs is 0.42em of
+     its own size, which holds at any figure size because both scale together. */
+  vertical-align: 0.42em;
+}
+
+.rf-cap {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.005em;
+  color: var(--home-sub);
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+/* ---- App picker: one horizontal card per product ---- */
+.d1-wrap { margin-bottom: 46px; }
+
+.d1-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin-bottom: 13px;
+}
+
+.d1-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.d1-card {
+  --rf-accent: var(--pc);
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 15px 16px;
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+  text-decoration: none;
+  overflow: hidden;
+  transition:
+    border-color 220ms var(--ease-out),
+    background-color 220ms var(--ease-out),
+    box-shadow 220ms var(--ease-out),
+    transform 220ms var(--ease-out);
+}
+
+.d1-card:hover {
+  border-color: color-mix(in srgb, var(--rf-accent) 34%, var(--hairline));
+  background: color-mix(in srgb, var(--rf-accent) 6%, var(--surface));
+  box-shadow: var(--shadow-card);
+  transform: translateY(-1px);
+}
+
+.d1-card:active { transform: translateY(0); }
+
+.d1-card .picon {
+  width: 40px; height: 40px;
+  flex: none;
+  border-radius: 9px;
+  display: block;
+  object-fit: contain;
+  transition: transform 320ms var(--ease-spring);
+}
+
+.d1-card:hover .picon { transform: scale(1.07) rotate(-3deg); }
+
+.d1-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.d1-name {
+  font-size: 14.5px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  line-height: 1.2;
+  transition: color 240ms var(--ease-out);
+}
+
+.d1-card:hover .d1-name { color: color-mix(in srgb, var(--rf-accent) 60%, var(--ink)); }
+
+.d1-tag {
+  font-size: 12.5px;
+  color: var(--ink-2);
+  line-height: 1.35;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.d1-meta {
+  position: relative;
+  flex: none;
+  display: grid;
+  justify-items: end;
+  min-width: 74px;
+  height: 20px;
+}
+
+/* Neutral "Active" cross-fades to a bolder accent "Get Help" on hover. */
+.rf-status,
+.d1-help {
+  grid-area: 1 / 1;
+  display: inline-flex;
+  align-items: center;
+  letter-spacing: -0.01em;
+  transition:
+    opacity 200ms var(--ease-out),
+    transform 200ms var(--ease-out);
+}
+
+.rf-status { font-size: 11.5px; font-weight: 600; color: var(--ink-3); }
+
+.d1-help {
+  font-size: 12px;
+  font-weight: 700;
+  color: color-mix(in srgb, var(--rf-accent) 62%, var(--ink));
+  opacity: 0;
+  transform: translateX(3px);
+  pointer-events: none;
+}
+
+.d1-card:hover .rf-status { opacity: 0; transform: translateX(-4px); }
+.d1-card:hover .d1-help { opacity: 1; transform: translateX(0); }
+
+/* ---- Recent activity ---- */
+.activity {
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: 15px;
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+  transition: background-color 280ms var(--ease-out), border-color 280ms var(--ease-out);
+}
+
+/* The empty panel holds its own padding, so the card must not add more, and
+   the rounded corners come from .activity above. */
+.activity.is-empty .product-empty {
+  padding: 46px 24px 50px;
+  border: 0;
+  background: none;
+  box-shadow: none;
+}
+
+.activity-list { list-style: none; }
+
+.activity-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 11.5px 22px;
+  border-bottom: 1px solid var(--hairline);
+  font-size: 13.5px;
+  transition: background-color 180ms var(--ease-out), border-color 280ms var(--ease-out);
+  animation: row-in 500ms var(--ease-out) calc(var(--i) * 45ms) both;
+}
+
+.activity-row:last-child { border-bottom: none; }
+.activity-row:hover { background: var(--surface-hover); }
+
+/* No leading dot; the product name is tinted in that product's accent. */
+.activity-product {
+  font-weight: 700;
+  font-size: 12.5px;
+  flex-shrink: 0;
+  min-width: 52px;
+  padding-top: 1px;
+  color: var(--pc);
+  /* A name long enough to eat the row is capped rather than allowed to
+     push every title off the right. */
+  max-width: 168px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Every title starts at the same place. The names are different lengths,
+   so laying each row out on its own left them starting at eight
+   different distances from the edge, which reads as a wobble down the
+   whole panel.
+
+   The list owns the columns and each row borrows them, so the name
+   column is exactly as wide as the LONGEST name on this board and not a
+   pixel more. A fixed width would have been a guess that truncates one
+   install and wastes space on the next. */
+@supports (grid-template-columns: subgrid) {
+  .activity-list {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr) max-content;
+  }
+  .activity-row {
+    display: grid;
+    grid-column: 1 / -1;
+    grid-template-columns: subgrid;
+    align-items: start;
+  }
+}
+
+.activity-main { flex: 1; min-width: 0; }
+
+.activity-title {
+  display: block;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ink);
+  line-height: 1.4;
+}
+
+.activity-sub {
+  display: block;
+  font-size: 12.5px;
+  color: var(--ink-2);
+  margin-top: 1px;
+}
+
+.activity-date {
+  flex-shrink: 0;
+  font-size: 12px;
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+  padding-top: 1px;
+}
+
+/* Stats + picker responsive: mirror the old app-grid breakpoints. */
+@media (max-width: 760px) { .rf-stats { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 720px) { .d1-grid { grid-template-columns: 1fr; } }
+/* Two-up on a phone, not one.
+
+   Four full-width tiles is 4 x 71px plus gaps, so the stats alone took most
+   of the first screen and pushed the product list below the fold on every
+   home page. Each tile was mostly empty anyway: a 33px chip and two short
+   lines in a 343px box.
+
+   Two-up leaves about 160px a tile, which the chip and the number fit
+   comfortably. The captions are the tight part ("Submitted This Week",
+   "Typical First Reply"), so they wrap to a second line here instead of
+   being truncated, and the tile grows to hold it. */
+@media (max-width: 480px) {
+  .rf-stats { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .rf-cell { min-height: 76px; padding: 0 12px; }
+  .rf-row { gap: 10px; }
+  .rf-cap { white-space: normal; }
+}
+
+/* ============ Board view ============ */
+
+.board-head {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 30px;
+}
+
+/* This used to be 14px, on the reasoning that the header could hand its
+   breathing room to the toolbar row. In practice it took the room from the
+   product name and tagline, which are the two things at the top of the page
+   that most need it, and it left the toolbar sitting 16px above the active
+   product in the sidebar: the only other object at that height, so the eye
+   reads them as a line that does not line up.
+
+   Now the same 30px as any other header. Kept as its own rule rather than
+   deleted so the toolbar case stays pinned if the default ever moves. */
+/* Fixed height, for the same reason the rows are: this header is the last
+   thing between the top of the page and the toolbar row, so if its height
+   moves with the font, the row below it moves too and the alignment goes
+   with it. 54px is the icon plus its breathing room; the name and tagline
+   centre inside it and the tagline truncates rather than growing it. */
+.board-head:has(+ .section-toolbar) {
+  height: 54px;
+  /* 41px, from the settled layout in a real browser. Do not re-derive this
+     from a measurement taken here: the board animates in from below, so
+     anything measured before it comes to rest reads about 12px low and
+     makes this look like it should be 30. It was 30 for exactly that
+     reason, and it was wrong on every machine but the one it was tuned on. */
+  margin-bottom: 41px;
+}
+
+/* The overview's panels line up with the sidebar the same way the toolbar
+   row does, and for the same reasons: the header is pinned so its height
+   cannot move with the font, and the gap is 44px taken from a settled
+   layout in a real browser rather than measured here mid-animation. */
+/* The item page puts its back link straight after the header, where the
+   section pages put a toolbar row. Same stack, same numbers, so the button
+   lands exactly where its equivalent does one level up: 54px header, then
+   41px, then the extra 3px the toolbar spends centring a 34px control in a
+   40px row. Derived from the section pages rather than measured here, since
+   a reading taken while the board animates in is about 12px out. */
+.board-head:has(+ .detail-nav) {
+  height: 54px;
+  margin-bottom: 44px;
+}
+
+.detail-back { height: var(--row-h); padding-top: 0; padding-bottom: 0; }
+
+.board-head:has(+ .ov-grid) {
+  height: 54px;
+  margin-bottom: 44px;
+}
+
+.board-head:has(+ .ov-grid) .board-tagline {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.board-head:has(+ .section-toolbar) .board-tagline {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.board-head .picon {
+  width: 42px; height: 42px;
+  flex-shrink: 0;
+  filter: drop-shadow(0 6px 18px color-mix(in srgb, var(--accent) 55%, transparent));
+  transition: filter var(--accent-ms) var(--ease-out);
+}
+
+[data-theme="dark"] .board-head .picon {
+  filter: drop-shadow(0 6px 22px color-mix(in srgb, var(--accent) 75%, transparent));
+}
+
+.board-head h1,
+.board-head .board-title {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  color: var(--ink);
+}
+
+.board-tagline {
+  display: block;
+  font-size: 13.5px;
+  color: var(--ink-2);
+  margin-top: 5px;
+}
+
+/* Pattern 1: clickable product identity (icon + name) links out to the
+   product's marketing site. A hover-revealed external-link glyph plus a
+   name colour/underline shift signal the link so it is never a mystery. */
+.board-identity {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  min-width: 0;
+  border-radius: 12px;
+}
+
+/* Stack the name above the tagline with clear separation - the two
+   must never run together on one line. */
+.board-id-text {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.board-identity .board-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: color 200ms var(--ease-out);
+}
+
+/* On hover the name shifts to the product accent as the only link
+   signal (no underline, no external glyph); the icon gives a gentle
+   micro-move. The explicit Visit button is the clear affordance. */
+.board-identity:hover .board-title,
+.board-identity:focus-visible .board-title { color: var(--accent-ink); }
+
+.board-identity:hover .picon { transform: scale(1.05) rotate(-3deg); }
+
+/* Pattern 2: explicit Visit link, pinned to the header's right.
+   Quiet accent tint rather than a filled button: the header row is
+   brand-level, and the one filled accent button on a section page
+   should be its primary action (the add button in the toolbar). */
+.board-visit {
+  margin-left: auto;
+  flex-shrink: 0;
+  align-self: center;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 14px;
+  border-radius: 9px;
+  border: 1px solid color-mix(in srgb, var(--accent) 26%, transparent);
+  background: var(--accent-tint);
+  color: var(--accent-ink);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  transition: background-color var(--accent-ms) var(--ease-out), color var(--accent-ms) var(--ease-out), border-color var(--accent-ms) var(--ease-out), transform 220ms var(--ease-spring), box-shadow 220ms var(--ease-out);
+}
+
+.board-visit:hover {
+  background: var(--accent-ink);
+  border-color: var(--accent-ink);
+  color: var(--on-accent);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px -2px color-mix(in srgb, var(--accent) 32%, transparent);
+}
+
+.board-visit:active { transform: scale(0.97); }
+
+/* ============ Status glyphs ============
+   One glyph family across kanban column heads: 13px circles,
+   1.5px strokes, state-coloured. */
+
+.st-glyph {
+  width: 13px; height: 13px;
+  flex-shrink: 0;
+  transition: transform 240ms var(--ease-spring);
+}
+
+.st-glyph svg { display: block; width: 13px; height: 13px; }
+
+.st-all .st-glyph      { color: var(--ink-3); }
+.st-review .st-glyph   { color: var(--st-review); }
+.st-planned .st-glyph  { color: var(--pill-planned-text); }
+.st-progress .st-glyph { color: var(--pill-progress-text); }
+.st-done .st-glyph     { color: var(--st-done); }
+.st-declined .st-glyph { color: var(--pill-declined-text); }
+
+/* Overview only exists inside a product */
+body:not([data-view="board"]) #boardNav [data-nav="overview"] { display: none; }
+
+/* Board sections (Overview / board / panel) */
+.bsec { display: none; }
+.bsec.is-active { display: block; animation: view-in 380ms var(--ease-out) both; }
+
+/* Inside a product the surfaces themselves carry a faint accent tint,
+   so the whole board reads as the product's world. */
+body[data-view="board"] .ov-panel,
+body[data-view="board"] .kcol,
+body[data-view="board"] .group-list,
+body[data-view="board"] .faq-list,
+body[data-view="board"] .tcard,
+body[data-view="board"] .thread,
+body[data-view="board"] .comment-form,
+body[data-view="board"] .tl-notes,
+body[data-view="board"] .product-empty {
+  background: color-mix(in srgb, var(--accent) 3%, var(--surface));
+}
+
+body[data-view="board"] .tcard {
+  border-color: color-mix(in srgb, var(--accent) 18%, var(--hairline));
+}
+
+body[data-view="board"] .ov-card:hover,
+body[data-view="board"] .ov-t:hover,
+body[data-view="board"] .kcard:hover,
+body[data-view="board"] .gitem:hover,
+body[data-view="board"] .faq-q:hover,
+body[data-view="board"] .ov-faq:hover {
+  background: color-mix(in srgb, var(--accent) 7%, var(--surface-hover));
+}
+
+/* ============ Overview kanban ============ */
+
+/* 1fr auto rows: every row resolves to the tallest row's height,
+   so all six panels always match regardless of their content.
+   Short panels keep their content at the top and simply breathe. */
+.ov-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-auto-rows: 1fr;
+  align-items: stretch;
+  gap: 14px;
+}
+
+.ov-panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid color-mix(in srgb, var(--accent) 18%, var(--hairline));
+  border-radius: 15px;
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+  animation: row-in 480ms var(--ease-out) calc(var(--i) * 45ms) both;
+  transition: background-color 280ms var(--ease-out), border-color 400ms var(--ease-out), box-shadow 240ms var(--ease-out), translate 240ms var(--ease-out);
+}
+
+/* `translate`, not `transform`: row-in runs on transform with fill-mode
+   both and holds translateY(0) for the life of the page, so this lift had
+   never once fired. Same cause as the card lift on the board. */
+.ov-panel:hover { translate: 0 -1px; box-shadow: var(--shadow-card-hover); }
+
+.ov-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px 16px 11px;
+  text-align: left;
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 20%, var(--hairline));
+  transition: background-color 400ms var(--ease-out), border-color 400ms var(--ease-out);
+}
+
+.ov-head h2 { font-size: 13px; font-weight: 700; letter-spacing: -0.005em; }
+
+.ov-count {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Quiet at rest, accent on hover.
+
+   Six panels each carrying a bold accent-coloured "View All" made the row
+   read as six buttons competing with the content under them. It is the same
+   weight and colour as a date or a count now, and only asserts itself when
+   the pointer is on the panel it belongs to.
+
+   Deliberately NOT hover-only. It is the one thing saying the panel leads
+   somewhere, and there is no hover at all on a phone, which is where a good
+   share of a support centre's traffic lands. */
+.ov-all {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--ink-3);
+  transition: color 200ms var(--ease-out);
+}
+
+/* The whole panel is the target, not just its header. Somebody reading the
+   three bugs listed in the box is pointing at the box, and having to find
+   the header strip to reveal the way in is a smaller target than the thing
+   they are already looking at. */
+.ov-panel:hover .ov-all,
+.ov-head:focus-visible .ov-all { color: var(--accent-ink); }
+
+/* Hidden until then, but ONLY where there is a pointer to point with. On
+   touch there is no hover, so it stays visible and the panel keeps the one
+   thing saying it leads somewhere. */
+@media (hover: hover) {
+  .ov-all {
+    opacity: 0;
+    transition: opacity 200ms var(--ease-out), color 200ms var(--ease-out);
+  }
+  .ov-panel:hover .ov-all,
+  .ov-head:focus-visible .ov-all { opacity: 1; }
+}
+
+/* Square "+" in the header of panels users can add to
+   (Bugs, Features, Testimonials). Sits over the header button
+   as a sibling so the markup stays valid. Concentric radius:
+   panel 15px minus the 8px corner inset = 7px, so the two
+   curves nest. */
+.ov-panel.can-add .ov-head { padding-right: 48px; }
+
+.ov-add {
+  position: absolute;
+  top: 8px; right: 8px;
+  width: 27px; height: 27px;
+  border-radius: 7px;
+  display: grid;
+  place-items: center;
+  background: var(--accent-tint);
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+  color: var(--accent-ink);
+  z-index: 1;
+  transition:
+    background-color 200ms var(--ease-out),
+    border-color 200ms var(--ease-out),
+    color 200ms var(--ease-out),
+    transform 240ms var(--ease-spring);
+}
+
+.ov-add:hover {
+  background: var(--accent-tint-2);
+  border-color: color-mix(in srgb, var(--accent) 50%, transparent);
+  transform: scale(1.1);
+}
+
+.ov-add:active { transform: scale(0.92); }
+.ov-add svg { width: 12px; height: 12px; }
+
+.ov-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 8px 8px 10px;
+}
+
+.ov-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 8px 9px;
+  border-radius: 9px;
+  font-size: 12.5px;
+  transition: background-color 180ms var(--ease-out);
+}
+
+.ov-card:hover { background: var(--surface-hover); }
+
+.ov-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+/* The title wraps, and the excerpt keeps its single line.
+
+   A customer writes the title, so its length is not ours to control, and
+   one hard-cut line turned most real sentences into a fragment. The pills
+   stay where they are, because they are the two things people came to
+   read.
+
+   Four lines is the ceiling. The panels are narrow in place, three across
+   a 992px column leaves the title 141px while the two pills take 163px,
+   so a line holds about twenty characters. Four is enough for anything a
+   person reasonably types and short enough that one pasted paragraph
+   cannot stretch a card down the page. The demo copy is written to sit
+   well inside it; this is the guard rail for everyone else's. */
+.ov-title {
+  min-width: 0;
+  font-weight: 600;
+  white-space: normal;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.35;
+}
+
+.ov-sub {
+  font-size: 11.5px;
+  color: var(--ink-3);
+  white-space: normal;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.ov-card .pill { flex-shrink: 0; font-size: 10.5px; padding: 1.5px 8px; margin-top: 1px; }
+
+.ov-vote {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  padding: 2.5px 8px;
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--pill-radius);
+  background: var(--surface);
+  color: var(--ink-2);
+  font-size: 11.5px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  transition:
+    border-color 220ms var(--ease-out),
+    background-color 220ms var(--ease-out),
+    color 220ms var(--ease-out),
+    transform 260ms var(--ease-spring);
+}
+
+.ov-vote svg { width: 10px; height: 10px; }
+.ov-vote:hover {
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  color: var(--accent-ink);
+  background: var(--accent-tint);
+}
+.ov-vote:active { transform: scale(0.93); }
+.ov-vote.voted {
+  background: var(--accent-tint-2);
+  border-color: color-mix(in srgb, var(--accent) 50%, transparent);
+  color: var(--accent-ink);
+}
+.ov-vote.is-popping { animation: vote-pop 420ms var(--ease-spring); }
+
+/* Overview testimonial card */
+.ov-t { display: block; padding: 9px 9px 10px; border-radius: 9px; transition: background-color 180ms var(--ease-out); }
+.ov-t:hover { background: var(--surface-hover); }
+.ov-t + .ov-t { border-top: 1px solid var(--hairline); }
+
+.ov-t .tstars { margin-bottom: 5px; }
+.ov-t .tstars svg { width: 11px; height: 11px; }
+
+.ov-quote {
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--ink-2);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.ov-t-foot { display: flex; align-items: baseline; gap: 7px; margin-top: 7px; }
+.ov-t-name { font-size: 11.5px; font-weight: 600; color: var(--ink); }
+.ov-t-date { font-size: 11px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+
+/* Overview FAQ row */
+.ov-faq {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  text-align: left;
+  padding: 8px 9px;
+  border-radius: 9px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink);
+  transition: background-color 180ms var(--ease-out), color 180ms var(--ease-out);
+}
+
+.ov-faq:hover { background: var(--surface-hover); color: var(--accent-ink); }
+.ov-faq .ov-sub { font-weight: 500; }
+.ov-faq svg { width: 11px; height: 11px; flex-shrink: 0; color: var(--ink-3); }
+
+/* The FAQ rows used to stretch to share whatever height the tallest panel
+   dictated, on the theory that a dead band at the bottom looked worse.
+   It did not: three questions spread down a tall panel left gaps you
+   could park a car in, and every other panel already sits its content at
+   the top and simply breathes. So they keep their natural height and the
+   panel matches the other five. */
+
+/* Overview empty slice */
+.ov-empty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 10px;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--ink-3);
+}
+
+.ov-empty-mark {
+  width: 26px; height: 26px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  background: var(--accent-tint);
+  display: grid;
+  place-items: center;
+  color: var(--accent-ink);
+  transition: background-color var(--accent-ms) var(--ease-out), color var(--accent-ms) var(--ease-out);
+}
+
+.ov-empty-mark svg { width: 12px; height: 12px; }
+
+.ver-tag {
+  flex-shrink: 0;
+  font-size: 10.5px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  padding: 1.5px 7px;
+  border-radius: 6px;
+  background: var(--inset);
+  border: 1px solid var(--hairline);
+  color: var(--ink-2);
+  transition: background-color 280ms var(--ease-out), border-color 280ms var(--ease-out);
+}
+
+/* ============ Section toolbar ============
+   Section controls live on their OWN row beneath the product
+   identity: section label + count chip on the left, tools (the
+   "Search /" chip and the add button) right-anchored. Because the
+   row is otherwise empty, the expanded search field claims real
+   flex space here and can never overlap the identity above. */
+
+/* No margin-top here on purpose. It would collapse against .board-head's
+   bottom margin and quietly do a fraction of what it says: 16px set here
+   moved the row 2px, because the two margins collapse to the larger and
+   the header was already spending 14. The gap lives in one place, on the
+   header. */
+.section-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 40px;
+  margin-bottom: 24px;
+}
+
+/* The three controls in this row were three different heights: 34.40px for
+   the back link, 34.65px for search, 33.17px for the add button, because
+   each arrived at its height through its own font size, line height and
+   padding. Centred in a flex row that reads as the shorter one sitting
+   lower, which is exactly how it was spotted.
+
+   One explicit height settles it, and none of them has content that could
+   need more. */
+.section-toolbar > .toolbar-back,
+.section-toolbar .search-hint,
+.section-toolbar .section-add {
+  height: var(--row-h);
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+/* And one shared minimum width, so the control on the left and the one on
+   the right are equal by construction rather than by coincidence. A fixed
+   number could not do it: the add button says "Report a Bug" on one board
+   (132px) and "Request a Feature" on the next (167px), so matching one
+   would mismatch the other. Both take the wider of the two instead. */
+.section-toolbar > .toolbar-back,
+.section-toolbar .section-add {
+  min-width: 168px;
+  justify-content: center;
+}
+
+/* A heading, not a label. At 14.5px it was a word alone in a wide empty row
+   with the chooser below carrying borders, backgrounds and counts, so the
+   thing naming the page was the lightest object on it. 18px gives the
+   hierarchy its middle step: the product above, the section here, the filter
+   beneath. */
+/* The add control: a square the height of the heading it sits beside, not a
+   button at the far end of the row. Quiet by default because the heading is
+   the thing being read; it takes the accent on hover so it is clearly a
+   control rather than a decoration. */
+.section-add-sq {
+  width: 24px;
+  height: 24px;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 2px;
+  border-radius: 7px;
+  background: var(--inset);
+  color: var(--ink-3);
+  transition: background-color 180ms var(--ease-out), color 180ms var(--ease-out);
+}
+
+.section-add-sq svg { width: 12px; height: 12px; }
+
+.section-add-sq:hover,
+.section-add-sq:focus-visible {
+  background: var(--accent-tint);
+  color: var(--accent-ink);
+}
+
+.toolbar-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  flex-shrink: 0;
+  font-size: 18px;
+  letter-spacing: -0.02em;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+
+.toolbar-count {
+  min-width: 21px;
+  padding: 1px 7px;
+  border-radius: var(--pill-radius);
+  text-align: center;
+  font-size: 11px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent-ink);
+  background: var(--accent-tint-2);
+  transition: background-color var(--accent-ms) var(--ease-out), color var(--accent-ms) var(--ease-out);
+}
+
+.head-tools {
+  margin-left: auto;
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 11px;
+}
+
+.head-tools:empty { display: none; }
+
+/* The search field lives inside a slot that normally shows only a
+   quiet keyboard-hint chip ("Search" + a tiny "/" keycap). Pressing
+   "/" or clicking the chip swaps in the live filter field; Escape
+   clears and collapses it back to the chip. Opening the search grows
+   the slot within the toolbar row (flex reflow, never an overlay),
+   capped so the add button keeps its place beside it. */
+.search-slot {
+  position: relative;
+  min-height: 39px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.search-slot.is-open {
+  flex: 1 1 auto;
+  /* Room for a real phrase. At 400px a search for anything longer than a
+     couple of words scrolled inside its own box while most of the row sat
+     empty beside it. */
+  max-width: 560px;
+}
+
+.search-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 9px 7px 11px;
+  border: 1px solid var(--hairline);
+  border-radius: 9px;
+  background: var(--surface);
+  color: var(--ink-3);
+  font-size: 12.5px;
+  font-weight: 600;
+  transition: color 180ms var(--ease-out), border-color 180ms var(--ease-out), background-color 180ms var(--ease-out);
+}
+
+.search-hint:hover {
+  color: var(--ink-2);
+  border-color: var(--hairline-strong);
+  background: var(--surface-hover);
+}
+
+.search-hint svg { width: 12px; height: 12px; }
+
+/* When the chip is widened to match the add button (desktop, set in JS),
+   the "/" keycap rides to the far right so it reads like a real search
+   field. At natural width the auto margin collapses and nothing moves. */
+.search-hint .keycap { margin-left: auto; }
+
+/* Tiny keycap: a real key, not a fake input */
+.keycap {
+  min-width: 17px;
+  text-align: center;
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.5;
+  color: var(--ink-3);
+  padding: 0 5px 1px;
+  border-radius: 4.5px;
+  border: 1px solid var(--hairline-strong);
+  border-bottom-width: 2px;
+  background: var(--inset);
+  transition: background-color 280ms var(--ease-out), border-color 280ms var(--ease-out);
+}
+
+.search {
+  position: relative;
+  width: 100%;
+  display: none;
+}
+
+.search-slot.is-open .search-hint { display: none; }
+
+.search-slot.is-open .search {
+  display: block;
+  transform-origin: right center;
+  animation: search-in 260ms var(--ease-out) both;
+}
+
+@keyframes search-in {
+  from { opacity: 0; transform: translateX(6px) scaleX(0.98); filter: blur(2px); }
+  to   { opacity: 1; transform: translateX(0) scaleX(1); filter: blur(0); }
+}
+
+.search svg {
+  position: absolute;
+  left: 12px; top: 50%;
+  transform: translateY(-50%);
+  width: 14px; height: 14px;
+  color: var(--ink-3);
+  pointer-events: none;
+  transition: color 200ms var(--ease-out);
+}
+
+.search:focus-within svg { color: var(--accent-ink); }
+
+.search input {
+  width: 100%;
+  padding: 8.5px 46px 8.5px 34px;
+  border: 1px solid var(--hairline);
+  border-radius: 9px;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 13.5px;
+  outline: none;
+  transition: border-color 220ms var(--ease-out), box-shadow 220ms var(--ease-out), background-color 280ms var(--ease-out);
+}
+
+.search input::placeholder { color: var(--ink-3); }
+
+.search input:focus {
+  border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+  box-shadow: 0 0 0 3px var(--accent-tint-2);
+}
+
+.search kbd {
+  position: absolute;
+  right: 10px; top: 50%;
+  transform: translateY(-50%);
+  font-family: inherit;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--ink-3);
+  padding: 1.5px 6.5px;
+  border-radius: 5px;
+  border: 1px solid var(--hairline);
+  background: var(--inset);
+  pointer-events: none;
+  transition: background-color 280ms var(--ease-out), border-color 280ms var(--ease-out);
+}
+
+/* Section-level add affordance: one accent button, right of the
+   search chip in the header row on Bugs, Features, Roadmap, and
+   Testimonials views. */
+.section-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  flex-shrink: 0;
+  padding: 8.5px 16px;
+  border-radius: 9px;
+  background: var(--accent-ink);
+  color: var(--on-accent);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  transition: background-color var(--accent-ms) var(--ease-out), color 280ms var(--ease-out), transform 220ms var(--ease-spring), box-shadow 220ms var(--ease-out);
+}
+
+.section-add:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px -2px color-mix(in srgb, var(--accent) 32%, transparent);
+}
+
+.section-add:active { transform: scale(0.97); }
+.section-add svg { width: 12px; height: 12px; }
+
+@keyframes row-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Upvote chip: gentle spring (used on the item detail view) */
+.vote {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  min-width: 46px;
+  padding: 7px 8px 5px;
+  border: 1px solid var(--hairline-strong);
+  border-radius: 11px;
+  background: var(--surface);
+  color: var(--ink-2);
+  flex-shrink: 0;
+  transition:
+    border-color 220ms var(--ease-out),
+    background-color 220ms var(--ease-out),
+    color 220ms var(--ease-out),
+    transform 260ms var(--ease-spring);
+}
+
+.vote:hover {
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  color: var(--accent-ink);
+  background: var(--accent-tint);
+}
+
+.vote:hover svg { transform: translateY(-1.5px); }
+.vote:active { transform: scale(0.93); }
+
+.vote svg {
+  width: 12px; height: 12px;
+  transition: transform 240ms var(--ease-spring);
+}
+
+.vote-n {
+  display: inline-block;
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.3;
+}
+
+.ov-vote .vote-n { font-size: 11.5px; }
+
+.vote-n.rolling { animation: num-roll 300ms var(--ease-out); }
+
+@keyframes num-roll {
+  from { transform: translateY(0.45em); opacity: 0; filter: blur(3px); }
+  to   { transform: translateY(0); opacity: 1; filter: blur(0); }
+}
+
+.vote.voted {
+  background: var(--accent-tint-2);
+  border-color: color-mix(in srgb, var(--accent) 50%, transparent);
+  color: var(--accent-ink);
+}
+
+.vote.is-popping { animation: vote-pop 420ms var(--ease-spring); }
+
+@keyframes vote-pop {
+  0%   { transform: scale(1); }
+  35%  { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+.tag, .pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 9px;
+  border-radius: var(--pill-radius);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  transition: background-color 280ms var(--ease-out), color 280ms var(--ease-out);
+}
+
+.tag-bug { background: var(--tag-bug-bg); color: var(--tag-bug-text); }
+.tag-feature { background: var(--tag-feature-bg); color: var(--tag-feature-text); }
+
+.pill-review   { background: var(--pill-review-bg); color: var(--pill-review-text); }
+.pill-planned  { background: var(--pill-planned-bg); color: var(--pill-planned-text); }
+.pill-progress { background: var(--pill-progress-bg); color: var(--pill-progress-text); }
+.pill-done     { background: var(--pill-done-bg); color: var(--pill-done-text); }
+.pill-declined { background: var(--pill-declined-bg); color: var(--pill-declined-text); }
+
+.meta-sep {
+  width: 3px; height: 3px;
+  border-radius: 50%;
+  background: var(--ink-3);
+  opacity: 0.45;
+  flex-shrink: 0;
+}
+
+/* Purely typographic byline: name slightly stronger, date quieter */
+.meta-byline { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.byline-name { font-weight: 600; color: var(--ink); }
+
+/* Official replies from you: a small ink pill with an accent dot */
+.official-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2.5px 9px;
+  border-radius: var(--pill-radius);
+/* A deep version of the product accent, so the official reply pill
+     carries the product colour */
+  background: var(--accent-deep);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  transition: background-color var(--accent-ms) var(--ease-out), color 280ms var(--ease-out);
+}
+
+.search-empty {
+  display: none;
+  padding: 48px 22px;
+  text-align: center;
+  color: var(--ink-3);
+  font-size: 13.5px;
+}
+
+/* Empty product board */
+.product-empty {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 72px 24px;
+  border-radius: 15px;
+  background: var(--surface);
+  border: 1px solid color-mix(in srgb, var(--accent) 18%, var(--hairline));
+  box-shadow: var(--shadow-card);
+  transition: background-color 280ms var(--ease-out), border-color 400ms var(--ease-out);
+}
+
+.empty-orb {
+  width: 54px; height: 54px;
+  border-radius: 17px;
+  background: var(--accent-tint);
+  display: grid;
+  place-items: center;
+  color: var(--accent-ink);
+  margin-bottom: 18px;
+  transition: background-color var(--accent-ms) var(--ease-out), color var(--accent-ms) var(--ease-out);
+}
+
+.empty-orb svg { width: 22px; height: 22px; }
+
+.product-empty h3 {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin-bottom: 5px;
+}
+
+.product-empty p {
+  font-size: 13.5px;
+  color: var(--ink-2);
+  margin-bottom: 22px;
+}
+
+.empty-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 20px;
+  border-radius: 9px;
+  background: var(--accent-ink);
+  color: var(--on-accent);
+  font-size: 13px;
+  font-weight: 700;
+  transition: background-color var(--accent-ms) var(--ease-out), color 280ms var(--ease-out), transform 220ms var(--ease-spring), box-shadow 220ms var(--ease-out);
+}
+
+.empty-cta:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px -2px color-mix(in srgb, var(--accent) 32%, transparent);
+}
+
+.empty-cta:active { transform: scale(0.97); }
+.empty-cta svg { width: 12px; height: 12px; }
+
+/* ============ FAQ ============ */
+
+.faq-no-match { padding: 40px 22px; }
+
+.faq-cat { margin-bottom: 24px; animation: row-in 480ms var(--ease-out) calc(var(--i) * 60ms) both; }
+
+.faq-cat-label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--accent-ink);
+  margin-bottom: 9px;
+  padding: 0 2px;
+  transition: color var(--accent-ms) var(--ease-out);
+}
+
+.faq-list {
+  background: var(--surface);
+  border: 1px solid color-mix(in srgb, var(--accent) 18%, var(--hairline));
+  border-radius: 13px;
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+  transition: background-color 280ms var(--ease-out), border-color 400ms var(--ease-out);
+}
+
+.faq-item {
+  border-radius: 9px;
+  transition: background-color 260ms var(--ease-out), box-shadow 260ms var(--ease-out);
+}
+
+.faq-item + .faq-item { border-top: 1px solid var(--hairline); }
+
+/* Active search filter: inside the FAQ list the filtering itself is the
+   signal (only matches stay visible), and the list already carries an
+   accent border - so matches get only a faint background tint. A ring
+   here doubled up against the container border and read as a glitch. */
+.faq-item.search-hit {
+  background: color-mix(in srgb, var(--accent) 4%, transparent);
+}
+
+.faq-q {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 13px 18px;
+  text-align: left;
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--ink);
+  transition: background-color 180ms var(--ease-out), color 180ms var(--ease-out);
+}
+
+.faq-q:hover { background: var(--surface-hover); }
+.faq-item.open .faq-q { color: var(--accent-ink); }
+
+/* Question + one-line answer preview, visible while collapsed */
+.faq-q-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.faq-sub {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.faq-chip {
+  flex-shrink: 0;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  padding: 1.5px 8px;
+  border-radius: var(--pill-radius);
+  background: var(--inset);
+  border: 1px solid var(--hairline);
+  color: var(--ink-2);
+  transition: background-color 280ms var(--ease-out), border-color 280ms var(--ease-out);
+}
+
+.faq-q .chev {
+  margin-left: auto;
+  width: 14px; height: 14px;
+  flex-shrink: 0;
+  color: var(--ink-3);
+  transition: transform 340ms var(--ease-spring), color 200ms var(--ease-out);
+}
+
+.faq-item.open .chev { transform: rotate(180deg); color: var(--accent-ink); }
+
+.faq-a {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 340ms var(--ease-out);
+}
+
+.faq-item.open .faq-a { grid-template-rows: 1fr; }
+
+.faq-a-inner { overflow: hidden; min-height: 0; }
+
+.faq-a-inner p {
+  padding: 1px 18px 15px;
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--ink-2);
+  max-width: 68ch;
+  text-wrap: pretty;
+}
+
+/* ============ Status pages ============
+
+   The chooser is deliberately not a new component. It is .side-item's
+   geometry (9px radius, 13.5px/500, --ink-2, and the same hover) carrying
+   the board's own status glyph colours, so nothing here introduces a shape,
+   a size or a colour the interface did not already use.
+
+   The selected chip wears its OWN status colour, from the same --pill-*
+   tokens the status badges on item pages use. So Under Review is amber
+   here exactly as it is there. */
+
+/* The chooser is the same object as the list beneath it: same width, same
+   border, same corner. Loose chips floating above a bordered card read as
+   two unrelated things; one bar sitting on another reads as a control for
+   the thing below it.
+
+   Equal columns rather than content width, so the row does not reflow as
+   counts change from 1 to 12 and back. */
+.stchoose {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 4px;
+  padding: 4px;
+  /* The same 24px the toolbar leaves above it, so the chooser sits evenly
+     between the controls and the list rather than closer to one of them. */
+  margin-bottom: 24px;
+  border: 1px solid var(--hairline);
+  border-radius: 14px;
+  background: var(--surface);
+}
+
+.stc {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 8px 10px;
+  border-radius: 10px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--ink-2);
+  white-space: nowrap;
+  transition: background-color 180ms var(--ease-out), color 180ms var(--ease-out);
+}
+
+.stc:hover { background: var(--sidebar-hover); }
+
+.stc .st-glyph { width: 15px; height: 15px; flex-shrink: 0; }
+
+.stc-n {
+  font-size: 11.5px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-3);
+}
+
+.stc.is-active { font-weight: 600; }
+/* The selected chip takes its status colour, and its glyph and count come
+   with it: a two-tone chip reads as half-selected. */
+.stc.is-active .stc-n,
+.stc.is-active .st-glyph { color: currentColor; }
+
+.stc.is-active.s-review   { background: var(--pill-review-bg);   color: var(--pill-review-text); }
+.stc.is-active.s-planned  { background: var(--pill-planned-bg);  color: var(--pill-planned-text); }
+.stc.is-active.s-progress { background: var(--pill-progress-bg); color: var(--pill-progress-text); }
+.stc.is-active.s-done     { background: var(--pill-done-bg);     color: var(--pill-done-text); }
+.stc.is-active.s-declined { background: var(--pill-declined-bg); color: var(--pill-declined-text); }
+
+/* "All" has no status of its own, so it borrows the one thing that already
+   means "you are here" with no colour attached. */
+.stc-all.is-active { background: var(--accent-tint); color: var(--accent-ink); }
+.stc-all.is-active .stc-n { color: var(--accent-ink); }
+
+/* The list. A row rather than a card, because arriving here is a request
+   for width: the description reads in full and the reply comes with it. */
+.sl-list {
+  border: 1px solid var(--hairline);
+  border-radius: 14px;
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.sl-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  padding: 15px 18px;
+  border-top: 1px solid var(--hairline);
+  transition: background-color 180ms var(--ease-out);
+}
+
+.sl-row:first-child { border-top: none; }
+.sl-row:hover { background: var(--surface-hover); }
+
+.sl-main { min-width: 0; flex: 1; }
+
+/* Title and status share a line: the pill has to sit with the thing it
+   describes, not float off to the right where a long title would push it
+   out of reach. */
+.sl-head {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+
+.sl-title {
+  display: block;
+  font-size: 14.5px;
+  font-weight: 640;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+
+.sl-sub {
+  display: block;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--ink-2);
+  max-width: 78ch;
+  text-wrap: pretty;
+}
+
+/* The report runs in full; the reply is clamped. A long thread would
+   otherwise push the next item off the screen, and the reply is context
+   here rather than the thing being scanned. */
+.sl-reply {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-top: 9px;
+  padding-left: 12px;
+  border-left: 2px solid var(--hairline-strong);
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--ink-3);
+  max-width: 78ch;
+}
+
+.sl-reply b { font-weight: 620; color: var(--ink-2); }
+
+.sl-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  flex: none;
+}
+
+/* Who wrote it, beside what they wrote. */
+.sl-by {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink-3);
+  white-space: nowrap;
+}
+
+/* Two right-aligned lines: date and votes, then the status beneath. */
+.sl-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.sl-date {
+  font-size: 12px;
+  color: var(--ink-3);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.sl-list-empty { background: transparent; border-style: dashed; }
+
+.sl-empty {
+  padding: 40px 18px;
+  text-align: center;
+  font-size: 13.5px;
+  color: var(--ink-3);
+}
+
+/* The column heading on the board, once it leads somewhere.
+
+   No arrow glyph. The heading deepens its own accent wash and the count
+   comes forward, which is the same way every other surface in here says
+   "this responds to you". */
+.kcol-head.is-link { cursor: pointer; text-decoration: none; }
+
+.kcol-head.is-link:hover,
+.kcol-head.is-link:focus-visible {
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+}
+
+.kcol-head.is-link:hover .kcount,
+.kcol-head.is-link:focus-visible .kcount { color: var(--ink-2); }
+
+/* Six equal columns do not fit a phone, so the bar keeps its shape and
+   scrolls sideways rather than wrapping into a block of chips. */
+@media (max-width: 860px) {
+  .stchoose {
+    grid-auto-columns: max-content;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .stchoose::-webkit-scrollbar { display: none; }
+  .stc { padding: 8px 13px; }
+}
+
+@media (max-width: 720px) {
+  .sl-row { flex-direction: column; gap: 10px; }
+  .sl-side { flex-direction: row; align-items: center; gap: 12px; }
+}
+
+/* On a small phone the row's own footer runs out of room.
+
+   It carries four things on one line: the date, the vote count, the
+   product chip on a consolidated board, and the status pill. That fits a
+   375px screen and does not fit a 320px one, so the pill ran past the
+   card's right edge and was clipped by it. Nothing was hidden off the
+   page, which is why it never showed as sideways scrolling: the row was
+   simply too long for the card holding it.
+
+   Wrapping is the right answer rather than shrinking any of the four,
+   since each is already at the smallest it reads at. */
+@media (max-width: 380px) {
+  .sl-meta, .sl-side { flex-wrap: wrap; row-gap: 8px; justify-content: flex-start; }
+}
+
+/* ============ Consolidated views ============ */
+
+.prod-badge {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  white-space: nowrap;
+  gap: 5px;
+  padding: 2px 9px 2px 4px;
+  border-radius: var(--pill-radius);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  background: color-mix(in srgb, var(--pc) 9%, transparent);
+  color: color-mix(in srgb, var(--pc) var(--accent-mix-pct), var(--accent-mix-base));
+  transition: background-color 280ms var(--ease-out), color 280ms var(--ease-out);
+}
+
+.prod-badge .picon { width: 14px; height: 14px; }
+
+/* Testimonials: uniform compact grid, no masonry */
+.tgrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 13px;
+  align-items: stretch;
+}
+
+.tcard {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: 13px;
+  padding: 14px 15px 12px;
+  box-shadow: var(--shadow-card);
+  animation: row-in 480ms var(--ease-out) calc(var(--i) * 50ms) both;
+  transition: background-color 280ms var(--ease-out), border-color 280ms var(--ease-out), box-shadow 240ms var(--ease-out), translate 240ms var(--ease-out);
+}
+
+/* Dead for the same reason, and fixed the same way. */
+.tcard:hover { translate: 0 -2px; box-shadow: var(--shadow-card-hover); }
+
+.tstars {
+  display: flex;
+  gap: 2px;
+  margin-bottom: 7px;
+  color: var(--pill-review-text);
+}
+
+.tstars svg { width: 12px; height: 12px; }
+.tstars .star-off { color: var(--hairline-strong); }
+
+.tquote {
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--ink);
+  text-wrap: pretty;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: calc(3 * 1.55em);
+}
+
+.tfoot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 10px;
+}
+
+.tname { font-size: 12.5px; font-weight: 600; color: var(--ink); }
+.tdate { font-size: 11.5px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+.tfoot .prod-badge { margin-left: auto; }
+
+/* Country flag, bottom right of testimonial cards. Emoji flags,
+   sized for crispness; the title carries the country name. */
+.tflag {
+  margin-left: auto;
+  font-size: 14px;
+  line-height: 1;
+  cursor: default;
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", var(--font);
+}
+
+.tfoot .prod-badge ~ .tflag { margin-left: 0; }
+.ov-t-foot .tflag { font-size: 13px; }
+
+/* Grouped-by-product lists (roadmap, changelog, consolidated FAQ) */
+.group { margin-bottom: 28px; animation: row-in 480ms var(--ease-out) calc(var(--i) * 60ms) both; }
+
+.group-head {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 10px;
+  padding: 0 2px;
+}
+
+.group-head .picon { width: 20px; height: 20px; }
+.group-head h2 { font-size: 14px; font-weight: 700; letter-spacing: -0.01em; }
+.group-head .gcount { margin-left: 2px; font-size: 12px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+
+.group-list {
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: 13px;
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+  transition: background-color 280ms var(--ease-out), border-color 400ms var(--ease-out);
+}
+
+body[data-view="board"] .group-list { border-color: color-mix(in srgb, var(--accent) 18%, var(--hairline)); }
+
+.gitem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--hairline);
+  font-size: 13.5px;
+  transition: background-color 180ms var(--ease-out), border-color 280ms var(--ease-out);
+  animation: row-in 420ms var(--ease-out) calc(var(--j, 0) * 35ms) both;
+}
+
+.gitem:last-child { border-bottom: none; }
+.gitem:hover { background: var(--surface-hover); }
+.gitem .gtitle { font-weight: 600; }
+.gitem .gdate {
+  margin-left: auto;
+  flex-shrink: 0;
+  font-size: 12px;
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ============ Kanban (Bugs, Features, Roadmap) ============
+   Columns speak the overview panels' language: same surface,
+   header wash, border, radius and shadow recipe. The accent
+   column well lives on in the header band and the faint
+   surface tint, so the boards read as the overview exploded
+   into full sections. */
+
+/* Columns match the tallest, not their own contents. With align-items:start
+   a four-column board sat at four different heights (126, 126, 199, 181 on
+   a real one), which is the difference between a board and four loose
+   cards. They stretch to the tallest and no further: filling the window
+   would invent several hundred pixels of empty column, which is a worse
+   lie than a ragged edge.
+
+   .kcards already carries flex: 1, so the body of a short column grows to
+   meet it and nothing else has to change. */
+.kanban {
+  display: grid;
+  grid-template-columns: repeat(var(--cols, 4), 1fr);
+  gap: 14px;
+  align-items: stretch;
+}
+
+/* So a board with one item in it still looks like a board. */
+.kcol { min-height: 188px; }
+
+.kcol {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid color-mix(in srgb, var(--accent) 18%, var(--hairline));
+  border-radius: 15px;
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+  animation: row-in 480ms var(--ease-out) calc(var(--i) * 55ms) both;
+  transition: background-color 280ms var(--ease-out), border-color 400ms var(--ease-out), box-shadow 240ms var(--ease-out);
+}
+
+.kcol-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 14px 10px;
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 20%, var(--hairline));
+  transition: background-color 400ms var(--ease-out), border-color 400ms var(--ease-out);
+}
+
+.kcol-head h3 {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: -0.005em;
+  color: var(--ink);
+}
+
+.kcount {
+  margin-left: auto;
+  font-size: 11.5px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-3);
+}
+
+.kcards {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 8px 10px;
+}
+
+/* Cards take the overview's compact row treatment */
+.kcard {
+  border-radius: 9px;
+  padding: 9px 10px 8px;
+  cursor: pointer;
+  animation: row-in 420ms var(--ease-out) calc(var(--i, 0) * 55ms + var(--j, 0) * 50ms) both;
+  transition: background-color 180ms var(--ease-out), translate 220ms var(--ease-out),
+              scale 120ms var(--ease-out), box-shadow 260ms var(--ease-out);
+}
+
+/* A card you can pick up. It changed colour on hover and did not move,
+   which made the board feel printed rather than handled. One pixel and a
+   shadow is the whole difference.
+
+   The lift uses `translate` and the press uses `scale`, the independent
+   properties, NOT `transform`. The card's entry animation runs on
+   transform with fill-mode: both, so it holds translateY(0) for the life
+   of the page and beats any `transform` written here. The press was
+   already written that way and had never once fired. */
+.kcard:hover {
+  background: var(--surface-hover);
+  translate: 0 -1px;
+  box-shadow: 0 6px 18px -6px rgba(16, 24, 40, 0.18);
+}
+[data-theme="dark"] .kcard:hover { box-shadow: 0 6px 18px -6px rgba(0, 0, 0, 0.55); }
+.kcard:hover .kcard-title { color: var(--accent-ink); }
+.kcard:active { scale: 0.99; }
+
+@media (prefers-reduced-motion: reduce) {
+  .kcard:hover, .ov-panel:hover, .tcard:hover { translate: none; }
+  .kcard:active { scale: none; }
+}
+
+/* Active search filter: every visible match carries the home card's
+   hover treatment - an accent ring plus a soft accent glow - for as
+   long as the query is non-empty, in product and consolidated boards
+   and both themes. */
+.kcard.search-hit {
+  background: color-mix(in srgb, var(--accent) 6%, var(--surface));
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--accent) 55%, transparent),
+    0 10px 26px -12px color-mix(in srgb, var(--accent) 38%, transparent);
+}
+
+.kcard-title {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  line-height: 1.35;
+  transition: color 200ms var(--ease-out);
+}
+
+.kcard-sub {
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--ink-2);
+  margin-top: 2px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.kcard-foot {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 9px;
+  flex-wrap: wrap;
+}
+
+.kcard-foot .tag { font-size: 10.5px; padding: 1.5px 8px; }
+.kcard-foot .prod-badge { font-size: 10.5px; padding: 1.5px 8px 1.5px 3px; }
+.kcard-foot .prod-badge .picon { width: 13px; height: 13px; }
+.kcard-foot .ov-vote { margin-left: auto; }
+
+.kcard-byline {
+  font-size: 11px;
+  color: var(--ink-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-variant-numeric: tabular-nums;
+}
+
+.kcard-byline .byline-name { font-weight: 600; color: var(--ink-2); }
+
+.kempty {
+  padding: 22px 10px 24px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--ink-3);
+}
+
+/* ============ Changelog timeline ============ */
+
+.timeline {
+  position: relative;
+  max-width: 720px;
+  padding-left: 32px;
+}
+
+.timeline::before {
+  content: "";
+  position: absolute;
+  left: 8px;
+  top: 8px;
+  bottom: 8px;
+  width: 1px;
+  background: var(--hairline-strong);
+  transition: background-color 280ms var(--ease-out);
+}
+
+.tl-entry {
+  position: relative;
+  padding-bottom: 30px;
+  animation: row-in 480ms var(--ease-out) calc(var(--i) * 70ms) both;
+}
+
+.tl-entry:last-child { padding-bottom: 6px; }
+
+/* Accent node, centred on the spine */
+.tl-entry::before {
+  content: "";
+  position: absolute;
+  left: -28px;
+  top: 6px;
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-tint-2);
+  transition: background-color var(--accent-ms) var(--ease-out);
+}
+
+.tl-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 7px;
+}
+
+.tl-date {
+  font-size: 12px;
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.tl-title {
+  font-size: 15.5px;
+  font-weight: 700;
+  letter-spacing: -0.012em;
+  line-height: 1.3;
+}
+
+.tl-sub {
+  font-size: 13px;
+  color: var(--ink-2);
+  margin-top: 3px;
+  max-width: 62ch;
+  text-wrap: pretty;
+}
+
+/* Full release notes: the whole note set lives on the timeline,
+   ready for entries to grow into long multi-release scrolls. */
+.tl-notes {
+  margin-top: 12px;
+  padding: 13px 16px 14px;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--ink-2);
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: 11px;
+  box-shadow: var(--shadow-card);
+  max-width: 62ch;
+  text-wrap: pretty;
+  transition: background-color 280ms var(--ease-out), border-color 280ms var(--ease-out);
+}
+
+.tl-notes ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.tl-notes li { position: relative; padding-left: 17px; }
+
+.tl-notes li::before {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 0.55em;
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--accent);
+  opacity: 0.65;
+  transition: background-color var(--accent-ms) var(--ease-out);
+}
+
+body[data-view="board"] .tl-notes { border-color: color-mix(in srgb, var(--accent) 18%, var(--hairline)); }
+
+/* ============ Item detail + comments ============ */
+
+/* Detail top bar: a proper bordered back button (chevron + the
+   section you came from) at the top of the content column, plus
+   quiet breadcrumb context, clearly separated from the title block. */
+.detail-nav {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin-bottom: 26px;
+  animation: row-in 420ms var(--ease-out) both;
+}
+
+.detail-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 14px 7px 11px;
+  border: 1px solid var(--hairline-strong);
+  border-radius: 9px;
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--ink-2);
+  transition:
+    color 200ms var(--ease-out),
+    border-color 200ms var(--ease-out),
+    background-color 200ms var(--ease-out),
+    box-shadow 220ms var(--ease-out),
+    transform 220ms var(--ease-spring);
+}
+
+.detail-back:hover {
+  color: var(--accent-ink);
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  background: var(--accent-tint);
+  box-shadow: var(--shadow-card-hover);
+}
+
+.detail-back:active { transform: scale(0.97); }
+.detail-back svg { width: 12px; height: 12px; transition: transform 220ms var(--ease-out); }
+.detail-back:hover svg { transform: translateX(-2px); }
+
+.detail-head {
+  max-width: 720px;
+  animation: row-in 480ms var(--ease-out) 60ms both;
+}
+
+.detail-title-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.detail-title {
+  flex: 1;
+  min-width: 0;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.018em;
+  line-height: 1.25;
+}
+
+.detail-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 9px;
+  font-size: 12px;
+  color: var(--ink-3);
+}
+
+/* The original request, boxed like a reply so the page reads as one conversation */
+.detail-post {
+  max-width: 720px;
+  margin-top: 16px;
+  padding: 13px 18px 14px;
+  background: var(--surface);
+  border: 1px solid color-mix(in srgb, var(--accent) 18%, var(--hairline));
+  border-radius: 15px;
+  box-shadow: var(--shadow-card);
+  animation: row-in 480ms var(--ease-out) 100ms both;
+  transition: background-color 280ms var(--ease-out), border-color 400ms var(--ease-out);
+}
+
+/* Reply thread */
+.thread {
+  max-width: 720px;
+  margin-top: 20px;
+  background: var(--surface);
+  border: 1px solid color-mix(in srgb, var(--accent) 18%, var(--hairline));
+  border-radius: 15px;
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+  animation: row-in 480ms var(--ease-out) 130ms both;
+  transition: background-color 280ms var(--ease-out), border-color 400ms var(--ease-out);
+}
+
+.thread-head {
+  padding: 11px 18px 10px;
+  border-bottom: 1px solid var(--hairline);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+  transition: border-color 280ms var(--ease-out);
+}
+
+.reply {
+  padding: 13px 18px 14px;
+  border-bottom: 1px solid var(--hairline);
+  animation: row-in 420ms var(--ease-out) calc(180ms + var(--i, 0) * 55ms) both;
+  transition: border-color 280ms var(--ease-out), background-color 280ms var(--ease-out);
+}
+
+.reply:last-child { border-bottom: none; }
+
+/* Official replies sit on the faintest accent wash */
+.reply.is-official { background: color-mix(in srgb, var(--accent) 4.5%, transparent); }
+
+.reply-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.reply-date {
+  font-size: 11.5px;
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.reply-text {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--ink-2);
+  max-width: 62ch;
+  text-wrap: pretty;
+}
+
+.thread-empty {
+  padding: 22px 18px;
+  font-size: 12.5px;
+  color: var(--ink-3);
+}
+
+/* A satisfying spring entrance for a freshly posted comment */
+.reply.is-new {
+  animation: reply-in 520ms var(--ease-spring) both;
+}
+
+@keyframes reply-in {
+  from { opacity: 0; transform: translateY(12px) scale(0.98); filter: blur(3px); }
+  to   { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+
+/* Add a Comment form */
+.comment-form {
+  max-width: 720px;
+  margin-top: 16px;
+  padding: 17px 18px 18px;
+  background: var(--surface);
+  border: 1px solid color-mix(in srgb, var(--accent) 18%, var(--hairline));
+  border-radius: 15px;
+  box-shadow: var(--shadow-card);
+  animation: row-in 480ms var(--ease-out) 200ms both;
+  transition: background-color 280ms var(--ease-out), border-color 400ms var(--ease-out);
+}
+
+.form-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  letter-spacing: -0.005em;
+  margin-bottom: 12px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.field label {
+  display: block;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--ink-2);
+  margin-bottom: 5px;
+}
+
+.field input,
+.field textarea {
+  width: 100%;
+  padding: 8.5px 12px;
+  border: 1px solid var(--hairline-strong);
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--inset) 55%, var(--surface));
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.5;
+  outline: none;
+  resize: vertical;
+  transition: border-color 220ms var(--ease-out), box-shadow 220ms var(--ease-out), background-color 280ms var(--ease-out);
+}
+
+.field input::placeholder,
+.field textarea::placeholder { color: var(--ink-3); }
+
+.field input:focus,
+.field textarea:focus {
+  border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+  box-shadow: 0 0 0 3px var(--accent-tint-2);
+  background: var(--surface);
+}
+
+.field.is-error input,
+.field.is-error textarea { border-color: color-mix(in srgb, var(--tag-bug-text) 65%, transparent); }
+
+.field-err {
+  display: none;
+  font-size: 11.5px;
+  color: var(--tag-bug-text);
+  margin-top: 4px;
+}
+
+.field.is-error .field-err { display: block; }
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12px;
+}
+
+.form-submit {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8.5px 18px;
+  border-radius: 9px;
+  background: var(--accent-ink);
+  color: var(--on-accent);
+  font-size: 13px;
+  font-weight: 700;
+  transition: background-color var(--accent-ms) var(--ease-out), color 280ms var(--ease-out), transform 220ms var(--ease-spring), box-shadow 220ms var(--ease-out);
+}
+
+.form-submit:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px -2px color-mix(in srgb, var(--accent) 32%, transparent);
+}
+
+.form-submit:active { transform: scale(0.97); }
+
+/* ============================================================
+   Responsive layer: tablet + phone (below 1100px).
+   Desktop (1100px and up) never enters these queries, so it
+   renders exactly as before. Every override lives after its
+   base rule, so equal specificity resolves on source order.
+   ============================================================ */
+
+/* Mobile chrome (top app bar + drawer scrim) stays out of the
+   desktop render entirely. */
+.mobile-bar, .drawer-scrim { display: none; }
+
+@media (max-width: 1099px) {
+  html { -webkit-tap-highlight-color: transparent; }
+
+  /* ---- Frame: top app bar on the frame surface, panel inset 8px.
+     The bar and drawer sit on the same continuous accent-breathing
+     frame; the content panel keeps its rounded, inset identity. ---- */
+  .app { flex-direction: column; height: 100vh; height: 100dvh; }
+
+  .mobile-bar {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    flex-shrink: 0;
+    min-width: 0;
+    padding: calc(6px + env(safe-area-inset-top, 0px)) calc(12px + env(safe-area-inset-right, 0px)) 6px calc(6px + env(safe-area-inset-left, 0px));
+  }
+
+  .mb-menu {
+    width: 44px; height: 44px;
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    border-radius: 11px;
+    color: var(--ink-2);
+    transition: background-color 180ms var(--ease-out), color 180ms var(--ease-out);
+  }
+
+  .mb-menu:hover, .mb-menu:active { background: var(--sidebar-hover); color: var(--ink); }
+  .mb-menu svg { width: 19px; height: 19px; }
+
+  .mb-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    min-width: 0;
+    min-height: 44px;
+    padding: 0 8px;
+    border-radius: 11px;
+    text-align: left;
+  }
+
+  .mb-brand .brand-mark { width: 25px; height: 25px; }
+  .mb-brand .brand-word { font-size: 15px; }
+
+  /* Active product chip, right-aligned while inside a product */
+  .mb-product {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    min-width: 0;
+    min-height: 44px;
+    padding: 5px 11px 5px 8px;
+    border-radius: var(--pill-radius);
+    border: 1px solid color-mix(in srgb, var(--accent) 26%, var(--hairline));
+    background: var(--accent-tint);
+    color: var(--accent-ink);
+    font-size: 12.5px;
+    font-weight: 700;
+    white-space: nowrap;
+    transition: background-color var(--accent-ms) var(--ease-out), color var(--accent-ms) var(--ease-out), border-color var(--accent-ms) var(--ease-out);
+  }
+
+  .mb-product[hidden] { display: none; }
+  .mb-product .picon { width: 18px; height: 18px; }
+  .mb-product > span { overflow: hidden; text-overflow: ellipsis; }
+  .mb-product:active { background: color-mix(in srgb, var(--accent) 14%, var(--accent-tint)); }
+
+  .main {
+    margin: 0 8px calc(8px + env(safe-area-inset-bottom, 0px));
+    min-height: 0;
+    border-radius: 14px;
+  }
+
+  .main-scroll { padding: 34px 28px 64px; overflow-x: hidden; }
+
+  /* ---- Sidebar becomes a slide-over drawer ---- */
+  .sidebar {
+    z-index: 70;
+    width: min(304px, 86vw);
+    padding: calc(26px + env(safe-area-inset-top, 0px)) 16px calc(16px + env(safe-area-inset-bottom, 0px)) calc(16px + env(safe-area-inset-left, 0px));
+    background:
+      linear-gradient(180deg, color-mix(in srgb, var(--accent) 9%, transparent), transparent 62%),
+      color-mix(in srgb, var(--accent) 3%, var(--canvas));
+    border-right: 1px solid var(--hairline);
+    box-shadow: var(--shadow-panel);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    transform: translateX(-103%);
+    visibility: hidden;
+    transition: transform 340ms var(--ease-out), visibility 0s linear 340ms;
+  }
+
+  body.drawer-open .sidebar {
+    transform: none;
+    visibility: visible;
+    transition: transform 340ms var(--ease-out);
+  }
+
+  .drawer-scrim {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    background: rgba(9, 11, 16, 0.44);
+    opacity: 0;
+    pointer-events: none;
+    touch-action: none;
+    transition: opacity 300ms var(--ease-out);
+  }
+
+  body.drawer-open .drawer-scrim { opacity: 1; pointer-events: auto; }
+
+  /* Comfortable touch rows inside the drawer */
+  /* Touch targets grow here, so the shared row height grows with them
+     rather than the padding, which would put the rows and the toolbar
+     controls back on separate measurements. */
+  :root { --row-h: 43px; }
+  .sidebar .side-item { padding: 0 12px; font-size: 14px; border-radius: 10px; }
+  .sidebar .brand { margin-bottom: 24px; }
+
+  /* ---- Touch targets (44px interactive heights) ---- */
+  .search-hint { min-height: 44px; padding: 10px 12px 10px 13px; }
+  .search input { min-height: 44px; }
+  .section-add { min-height: 44px; padding: 10px 18px; }
+  .board-visit { min-height: 44px; padding: 10px 16px; }
+  .detail-back { min-height: 44px; padding: 8px 15px 8px 12px; }
+  .empty-cta { min-height: 44px; }
+  .form-submit { min-height: 44px; padding: 10px 20px; }
+
+  /* Compact chips keep their scale but gain a 40px+ hit area */
+  .ov-vote { position: relative; }
+  .ov-vote::after { content: ""; position: absolute; inset: -9px; border-radius: inherit; }
+  .ov-add::after { content: ""; position: absolute; inset: -9px; }
+
+  /* ---- Section headers wrap instead of overflowing ---- */
+  .board-head { flex-wrap: wrap; row-gap: 12px; }
+  .section-toolbar { flex-wrap: wrap; row-gap: 10px; }
+
+  /* The three pinned header heights come off here, and the tagline gets
+     its full text back.
+
+     They exist to hold this header level with the active product row in
+     the sidebar, and at this width the sidebar is not beside the content
+     any more: it is a drawer behind a hamburger. So there is nothing left
+     to align to, and the pin becomes actively wrong, because the header
+     wraps to two rows at this width and 54px cannot hold them. Everything
+     below it was drawn 60-odd pixels up, over the tagline: the section
+     title and its add button sat on top of the product's own description
+     on every board, changelog, FAQ and testimonials page on a phone.
+
+     One-line truncation goes with them for the same reason. It was there
+     to stop a long tagline growing a fixed-height box; nothing is fixed
+     here, so a tagline that needs two lines can have two lines. */
+  .board-head:has(+ .section-toolbar),
+  .board-head:has(+ .detail-nav),
+  .board-head:has(+ .ov-grid) { height: auto; }
+
+  .board-head:has(+ .section-toolbar) .board-tagline,
+  .board-head:has(+ .ov-grid) .board-tagline {
+    overflow: visible;
+    text-overflow: clip;
+    white-space: normal;
+  }
+
+  /* ---- Overview panels: two-up ---- */
+  .ov-grid { grid-template-columns: repeat(2, 1fr); }
+
+  /* ---- Kanban: horizontal snap-scroll columns with a peek of the
+     next column and a thin accent scroll indicator ---- */
+  .kanban {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    margin: 0 -28px;
+    padding: 2px 28px 14px;
+    scroll-padding-left: 28px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .kcol {
+    flex: 0 0 clamp(258px, 85vw, 320px);
+    scroll-snap-align: start;
+  }
+
+  .kanban::-webkit-scrollbar { height: 6px; }
+  .kanban::-webkit-scrollbar-thumb { border-width: 1px; }
+
+  /* ---- Testimonials: two-up ---- */
+  .tgrid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ============ Phone (below 768px) ============ */
+@media (max-width: 767px) {
+  .main-scroll { padding: 22px 16px 56px; }
+
+  .home-head { margin-bottom: 28px; }
+
+  .board-head { gap: 12px 13px; margin-bottom: 24px; }
+  .board-head:has(+ .section-toolbar) { margin-bottom: 14px; }
+  .board-head .picon { width: 36px; height: 36px; }
+  .board-head h1, .board-head .board-title { font-size: 21px; }
+
+  /* The mobile bar already carries a product chip linking to the
+     marketing site, so the header's Visit button would be a
+     duplicate here - drop it and keep the header to one calm row. */
+  .board-visit { display: none; }
+
+  /* Toolbar row on phones: the label keeps the first line; the
+     tools wrap to a full-width line beneath it when tight, with
+     the add button pinned right. */
+  .section-toolbar { margin-bottom: 20px; }
+  .head-tools { flex-basis: 100%; margin-left: 0; justify-content: flex-start; flex-wrap: wrap; }
+  .head-tools .search-slot { flex: 1 1 auto; min-width: 0; justify-content: flex-start; }
+  .head-tools .section-add { margin-left: auto; }
+
+  /* An open search takes its own full row so the field stays
+     usable beside a wide add button (which wraps beneath). */
+  .head-tools .search-slot.is-open { flex-basis: 100%; max-width: none; }
+
+  /* iOS: inputs at 16px so focusing never zooms the page.
+     The textarea also re-joins the app font here (the base sheet
+     only inherits font-family on inputs). */
+  .search input, .field input, .field textarea { font-size: 16px; }
+  .field textarea { font-family: var(--font); }
+
+  /* Overview: single column, natural heights
+     (order already reads Bugs, Features, Testimonials, Roadmap,
+     Changelog, FAQ) */
+  .ov-grid { grid-template-columns: 1fr; grid-auto-rows: auto; }
+
+  /* ---- Overview rows: the text gets the width, the meta drops beneath.
+
+     The status pill and the vote button take a fixed 163px whatever the
+     screen, which is a fair trade in a 3-across desktop panel and a bad
+     one here: it left the excerpt about 148px, so a one-line summary came
+     out as "I verified an address I..." or "Only on imported...". Two or
+     three words is not a summary, it is a tease.
+
+     Wrapping the meta onto its own line gives the text the full panel and
+     matches the row on the board itself, which already reads name left,
+     status and votes right. ---- */
+  .ov-card { flex-wrap: wrap; row-gap: 7px; }
+  .ov-card .ov-main { flex: 1 0 100%; }
+  .ov-card .pill { order: 2; }
+  .ov-card .ov-vote { order: 3; margin-left: auto; }
+  .ov-card .ver-tag, .ov-card .gdate { order: 2; }
+  .ov-card .gdate { margin-left: auto; }
+
+  /* With a full line to itself the summary can be a sentence. */
+  .ov-sub { -webkit-line-clamp: 2; }
+
+  /* Kanban bleed matches the tighter content padding */
+  .kanban { gap: 10px; margin: 0 -16px; padding: 2px 16px 14px; scroll-padding-left: 16px; }
+
+  /* ---- Roadmap: the columns stack on a phone ----
+
+     Side-scrolling columns work on a tablet, where two are visible at
+     once and the second one tells you to swipe. On a 375px screen only
+     one fits, and the first is Under Consideration, which on most boards
+     is the emptiest. So the roadmap opened on the words "Nothing here
+     yet" above a column-height of white space, with everything that had
+     actually been planned, started or shipped hidden off the right edge
+     with nothing on screen to suggest it was there.
+
+     Stacked, the same four phases read as four sections down the page,
+     which is how every other list on a phone already behaves. */
+  .kanban {
+    display: block;
+    overflow-x: visible;
+    scroll-snap-type: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .kcol { width: auto; margin-bottom: 12px; }
+  .kcol:last-child { margin-bottom: 0; }
+
+  /* An empty phase costs a line, not a screen. The 188px floor exists so
+     four columns beside each other stay the same height, and stacked
+     there is nothing to match. */
+  .kcol { min-height: 0; }
+  .kempty { padding: 16px 10px 18px; }
+
+  /* Recent Activity: product name + date on the top line,
+     title and summary on their own full-width line beneath */
+  .activity-row { flex-wrap: wrap; row-gap: 3px; padding: 12px 16px; }
+  .activity-row .activity-main { order: 4; flex-basis: 100%; }
+  .activity-date { margin-left: auto; }
+
+  /* The one link on the board with no hit area but its own text. The
+     card titles and vote buttons all carry a stretched or inset ::after
+     that takes them to about 40px; this one is 19px, the height of the
+     line it sits on. Padding rather than a stretched link, because the
+     row holds other links and one covering the rest would swallow them. */
+  .activity-title { display: inline-block; padding-block: 8px; }
+
+  /* Testimonials: single column */
+  .tgrid { grid-template-columns: 1fr; }
+
+  /* Changelog: tighter spine, meta wraps cleanly */
+  .timeline { padding-left: 26px; }
+  .tl-entry::before { left: -22px; }
+  .tl-meta { flex-wrap: wrap; row-gap: 4px; }
+
+  /* Item detail + comment form */
+  .form-grid { grid-template-columns: 1fr; }
+  .detail-nav { flex-wrap: wrap; row-gap: 8px; }
+
+  /* FAQ rows breathe at full width */
+  .faq-q { padding: 12px 15px; min-height: 44px; }
+  .faq-a-inner p { padding: 1px 15px 14px; }
+
+  /* A product's one-line description wraps rather than being cut.
+
+     It shares its row with the status word on the right, so the text
+     column is about 280px, and a platform label as long as "VS Code
+     extension" pushes it narrower still. On the Solo home that was
+     enough to turn "Reviews your pull requests." into "Reviews your
+     pull req...", which is the tagline failing at the only job it has.
+     Nothing here is a fixed height, so it can simply have two lines. */
+  .d1-tag { white-space: normal; overflow: visible; text-overflow: clip; }
+
+  /* Small links get a thumb-sized target.
+
+     These two sit inline in the changelog and on the item page, so they
+     are sized by their text: 26px and 28px tall against the 44px a
+     finger actually needs. The padding grows rather than the type, so
+     they look the same and stop being a game of darts. */
+  .tl-shipped-item, .shipped-in { min-height: 36px; padding-block: 8px; }
+}
+
+/* ============ Small phone (480px and below) ============ */
+@media (max-width: 480px) {
+  .faq-chip { display: none; }
+}
+
+/* ============ Smallest phones (380px and below) ============
+
+   Must sit after the 1099px block, not before it. Both rules below match
+   at the same specificity as the ones they override, so the later one in
+   the file wins whatever the media query says. Written above that block
+   first, and the chip carried on truncating exactly as it had. */
+@media (max-width: 380px) {
+  /* The top bar holds a menu button, the company wordmark and the product
+     chip. At 320px those want 298px plus gaps, so the chip was squeezed
+     and the product's name was the thing that gave: "Halden Online" read
+     as "Halden Onlin..." on every page of that client's board.
+
+     Both names stay whole and both give a little instead. The wordmark
+     was the obvious thing to shorten, since the markup already splits it
+     into two words, but a company's name is not ours to abbreviate to win
+     back forty pixels. */
+  .mb-brand .brand-word { font-size: 13px; }
+  .mb-product { padding: 5px 7px 5px 6px; gap: 5px; font-size: 11.5px; }
+  .mb-product .picon { width: 16px; height: 16px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ============================================================
+   Static-site additions
+   New in production: real links inside cards, the submission
+   modal, and form confirmation states. Everything reuses the
+   design system's variables, radii, and easing.
+   ============================================================ */
+
+/* Textareas join the app font everywhere (the base sheet only
+   inherits font-family on inputs; the mockup patched this on
+   mobile only) */
+textarea { font-family: var(--font); }
+
+/* ---- Cards as real links (crawlable + keyboard friendly) ----
+   The whole card stays clickable via a stretched link; the vote
+   chip and product badge float above it. */
+.kcard, .ov-card { position: relative; }
+
+.kcard-link, .ov-card-link { color: inherit; }
+
+.kcard-link::after,
+.ov-card-link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 9px;
+}
+
+.kcard .ov-vote,
+.ov-card .ov-vote {
+  position: relative;
+  z-index: 1;
+}
+
+.kcard-link:focus-visible,
+.ov-card-link:focus-visible { outline: none; }
+
+.kcard:has(.kcard-link:focus-visible),
+.ov-card:has(.ov-card-link:focus-visible) {
+  outline: 2px solid color-mix(in srgb, var(--accent) 60%, transparent);
+  outline-offset: 2px;
+}
+
+/* Voted chips rest quietly: one vote per browser, no un-vote */
+.ov-vote.voted, .vote.voted { cursor: default; }
+
+/* ---- Submission modal ---- */
+
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+}
+
+.modal[hidden] { display: none; }
+
+.modal-scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(9, 11, 16, 0.44);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+  animation: scrim-in 260ms var(--ease-out) both;
+}
+
+@keyframes scrim-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.modal-panel {
+  position: relative;
+  width: min(560px, 100%);
+  max-height: calc(100vh - 40px);
+  max-height: calc(100dvh - 40px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--panel);
+  border: 1px solid var(--hairline-strong);
+  border-radius: 18px;
+  box-shadow: var(--shadow-card-hover);
+  padding: 22px 22px 20px;
+  animation: reply-in 420ms var(--ease-spring) both;
+}
+
+.modal-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.modal-title {
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.012em;
+  line-height: 1.25;
+}
+
+.modal-sub {
+  font-size: 12.5px;
+  color: var(--ink-2);
+  margin-top: 2px;
+  max-width: 46ch;
+}
+
+.modal-close {
+  margin-left: auto;
+  flex-shrink: 0;
+  width: 30px; height: 30px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  color: var(--ink-3);
+  border: 1px solid var(--hairline);
+  background: var(--surface);
+  transition: color 180ms var(--ease-out), border-color 180ms var(--ease-out), background-color 180ms var(--ease-out), transform 220ms var(--ease-spring);
+}
+
+.modal-close:hover {
+  color: var(--ink);
+  border-color: var(--hairline-strong);
+  background: var(--surface-hover);
+}
+
+.modal-close:active { transform: scale(0.92); }
+.modal-close svg { width: 12px; height: 12px; }
+
+.modal .field { margin-bottom: 10px; }
+.modal .form-grid .field { margin-bottom: 0; }
+.modal .form-grid { margin-bottom: 10px; }
+
+/* Selects share the soft field recipe, with a quiet chevron */
+.field select {
+  width: 100%;
+  padding: 8.5px 34px 8.5px 12px;
+  border: 1px solid var(--hairline-strong);
+  border-radius: 9px;
+  background-color: color-mix(in srgb, var(--inset) 55%, var(--surface));
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 1.5;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14' fill='none' stroke='%23969ca7' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m3.5 5.5 3.5 3.5 3.5-3.5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 11px center;
+  background-size: 13px 13px;
+  transition: border-color 220ms var(--ease-out), box-shadow 220ms var(--ease-out), background-color 280ms var(--ease-out);
+}
+
+.field select:focus {
+  border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+  box-shadow: 0 0 0 3px var(--accent-tint-2);
+  background-color: var(--surface);
+}
+
+.field.is-error select { border-color: color-mix(in srgb, var(--tag-bug-text) 65%, transparent); }
+
+/* Star picker: same star glyphs as testimonial cards, tap-sized */
+.star-picker {
+  display: flex;
+  gap: 3px;
+}
+
+.star-btn {
+  width: 32px; height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  color: var(--hairline-strong);
+  transition: color 160ms var(--ease-out), background-color 160ms var(--ease-out), transform 220ms var(--ease-spring);
+}
+
+.star-btn svg { width: 17px; height: 17px; }
+.star-btn:hover { background: var(--surface-hover); transform: scale(1.1); }
+.star-btn:active { transform: scale(0.92); }
+.star-btn.on { color: var(--pill-review-text); }
+
+/* Honeypot: visually hidden, still in the form for bots to find */
+.hp-field {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  margin: -1px; padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---- Success state: the Drawn Check ----
+   Swaps in for the form once a submission lands. The disc springs
+   in, the check draws itself (stroke-dashoffset) with a tiny
+   settle, then one line of copy and the View/Done pair fade up.
+   ~700ms all in; transform/opacity/dashoffset only. The modal
+   header is hidden meanwhile (.is-success) so no copy doubles up,
+   leaving just the close button at the top right. */
+
+.modal.is-success .modal-head > div { display: none; }
+.modal.is-success .modal-head { margin-bottom: 0; }
+
+.modal-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 14px 12px 18px;
+}
+
+.modal-success[hidden] { display: none; }
+
+.ms-anim {
+  height: 84px;
+  display: grid;
+  place-items: center;
+  margin-bottom: 16px;
+}
+
+/* Disc + check ride the product accent, so the confirmation is
+   branded per app in both themes */
+.ms-disc {
+  width: 58px; height: 58px;
+  border-radius: 50%;
+  background: var(--accent-tint-2);
+  display: grid;
+  place-items: center;
+  color: var(--accent-ink);
+  transform: scale(0);
+  opacity: 0;
+}
+
+.modal-success.play .ms-disc { animation: ms-disc-pop 420ms var(--ease-out) both; }
+
+@keyframes ms-disc-pop {
+  0%   { transform: scale(0.4); opacity: 0; }
+  55%  { transform: scale(1.04); opacity: 1; }
+  78%  { transform: scale(0.985); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.ms-disc svg { width: 26px; height: 26px; }
+
+.ms-disc path {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}
+
+.modal-success.play .ms-disc path { animation: ms-check-draw 300ms var(--ease-out) 200ms both; }
+
+@keyframes ms-check-draw {
+  from { stroke-dashoffset: 1; }
+  to   { stroke-dashoffset: 0; }
+}
+
+/* One line of copy + the actions, revealed once the check has
+   said its piece */
+.ms-foot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  opacity: 0;
+}
+
+.modal-success.play .ms-foot { animation: ms-foot-in 360ms var(--ease-out) 430ms both; }
+
+@keyframes ms-foot-in {
+  from { opacity: 0; transform: translateY(7px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.ms-line {
+  font-size: 15.5px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.ms-sub {
+  margin-top: 5px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--ink-3);
+  max-width: 34ch;
+}
+
+.ms-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* View + Done: same size and shape, one colour family. Done is
+   the solid accent-ink primary; View the lighter accent tint. */
+.ms-view, .ms-done {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 9px 20px;
+  border-radius: 9px;
+  border: 1px solid transparent;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.5;
+  transition: background-color 200ms var(--ease-out), color 200ms var(--ease-out), border-color 200ms var(--ease-out), transform 220ms var(--ease-spring), box-shadow 220ms var(--ease-out);
+}
+
+.ms-done {
+  background: var(--accent-ink);
+  color: var(--on-accent);
+}
+
+.ms-done:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px -2px color-mix(in srgb, var(--accent) 32%, transparent);
+}
+
+.ms-view {
+  background: var(--accent-tint);
+  border-color: color-mix(in srgb, var(--accent) 26%, transparent);
+  color: var(--accent-ink);
+}
+
+.ms-view:hover {
+  background: var(--accent-tint-2);
+  transform: translateY(-1px);
+}
+
+.ms-view:active, .ms-done:active { transform: scale(0.97); }
+
+/* Reduced motion: the final state, instantly. (The global 0.01ms
+   rule leaves animation-delay alone, so these explicit end states
+   are needed to skip the stagger.) */
+@media (prefers-reduced-motion: reduce) {
+  .modal-success.play .ms-disc,
+  .modal-success.play .ms-disc path,
+  .modal-success.play .ms-foot { animation: none; }
+  .modal-success.play .ms-disc { transform: scale(1); opacity: 1; }
+  .modal-success.play .ms-disc path { stroke-dashoffset: 0; }
+  .modal-success.play .ms-foot { opacity: 1; }
+}
+
+@media (max-width: 1099px) {
+  .ms-view, .ms-done { min-height: 44px; }
+}
+
+/* Inline confirmation (comment form + form errors) */
+.form-confirm {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 11px 14px;
+  border-radius: 11px;
+  background: var(--pill-done-bg);
+  color: var(--pill-done-text);
+  font-weight: 600;
+  font-size: 13px;
+  animation: reply-in 420ms var(--ease-spring) both;
+}
+
+.form-confirm svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+.form-error-note {
+  display: none;
+  margin-right: auto;
+  align-self: center;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--tag-bug-text);
+}
+
+.form-actions.has-error .form-error-note { display: block; }
+
+.form-submit[disabled] { opacity: 0.6; cursor: progress; transform: none; }
+
+/* The app scrolls inside .main-scroll, so lock that while a modal is up */
+body.modal-open .main-scroll { overflow: hidden; }
+body.modal-open { overflow: hidden; }
+
+/* ---- 404 page ---- */
+.notfound {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  max-width: 52ch;
+  padding-top: 24px;
+}
+
+.notfound .empty-orb { margin-bottom: 12px; }
+
+.notfound h1 {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--home-ink);
+}
+
+.notfound p { font-size: 14px; color: var(--ink-2); margin-bottom: 16px; }
+
+/* ---- Rich text inside descriptions, replies, and FAQ answers ----
+   Bodies come from Markdown, so multi-paragraph and list content
+   needs quiet rhythm. */
+.detail-desc p + p, .reply-text p + p, .faq-a-inner p + p { margin-top: 8px; }
+
+.detail-desc ul, .reply-text ul, .faq-a-inner ul { margin: 8px 0 0 18px; }
+.detail-desc li + li, .reply-text li + li, .faq-a-inner li + li { margin-top: 4px; }
+
+.detail-desc a, .reply-text a, .faq-a-inner a {
+  color: var(--accent-ink);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.detail-desc code, .reply-text code {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.92em;
+  padding: 1px 5px;
+  border-radius: 5px;
+  background: var(--inset);
+  border: 1px solid var(--hairline);
+}
+
+/* FAQ answers keep the mockup's measure when rendered from Markdown */
+.faq-a-inner ul { padding: 0 18px 15px 34px; margin: 0; }
+.faq-a-inner p + ul { padding-top: 0; margin-top: -8px; }
+
+/* ============ Site footer ============
+   Quiet, hairline-topped strip at the bottom of the content panel on
+   every page. margin-top: auto (the panel scroll area is a column
+   flexbox) pins it to the panel bottom on short pages; .view's
+   margin-bottom keeps a constant breathing gap on long ones. */
+
+.view.is-active { margin-bottom: 52px; }
+
+/* Full panel width, not the 992px content column, so the badge lands in
+   the bottom-right corner of the page rather than wherever the column
+   happens to end. */
+.site-footer {
+  margin-top: auto;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  padding-top: 16px;
+  font-size: 11.5px;
+  color: var(--ink-3);
+  transition: border-color 280ms var(--ease-out), color 280ms var(--ease-out);
+}
+
+.sf-links { display: flex; gap: 18px; }
+
+.sf-links a {
+  color: var(--ink-3);
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 160ms var(--ease-out);
+}
+
+.sf-links a:hover,
+.sf-links a:focus-visible { color: var(--ink); }
+
+/* Free edition only. A pill at the far end of the footer, cut to the same
+   measurements as New Request in the sidebar, so the two bottom corners
+   of the window match. The paid footer is exactly this footer with the
+   pill missing, rather than a different layout.
+
+   Its dark ground is fixed rather than taken from --accent: the accent is
+   the customer's brand colour and this is not their mark. It lifts a
+   little in dark mode so it still reads as a shape.
+
+   The mark is a CSS mask over the pill's own text colour, which is why it
+   is white here and slate in the widget without a second asset. */
+/* Sticky rather than parked in the footer.
+
+   It sat at the end of the document, so on any board longer than a screen
+   it was simply gone: the one thing the free edition asks for in exchange
+   for everything else, visible only to people who scrolled to the bottom.
+   It now stays in the corner of the panel, which is what a "powered by"
+   badge is for and what every other one does.
+
+   Fixed rather than sticky: sticky only pins an element while its own
+   container is on screen, and this one's container is the footer at the
+   very end, so it stayed exactly where it was. */
+.sf-badge {
+  --sf-badge-bg: #44586b;   /* Docket slate, the brand colour */
+  /* Sits at the foot of the sidebar column, under the navigation. Pushed
+     down by margin rather than positioned, so it is always at the bottom
+     however short the nav is, and never overlaps it however long. */
+  margin-top: auto;
+  flex: none;
+  align-self: stretch;
+  justify-content: center;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 12px;
+  border-radius: 10px;
+  background: var(--sf-badge-bg);
+  font-size: 13.5px;
+  font-weight: 650;
+  /* Locked to the same line-height as New Request. Matching the padding
+     and the type size is not enough on its own: the two pills sat 3.3px
+     apart in height until the line box was pinned as well. */
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  text-decoration: none;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.16);
+  transition: filter 160ms var(--ease-out), transform 160ms var(--ease-out);
+}
+
+/* Lifted a step in dark mode so the pill still separates from the page. */
+[data-theme="dark"] .sf-badge { --sf-badge-bg: #56697d; }
+
+.sf-badge:hover { filter: brightness(1.14); }
+.sf-badge:active { transform: translateY(1px); }
+
+.sf-badge-by { color: rgba(255, 255, 255, 0.72); font-weight: 500; }
+
+.sf-badge-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #ffffff;
+}
+
+/* Height is the cap height of the type beside it, measured rather than
+   assumed: a 13.5px font sets a cap of about 10px, and matching the font
+   size instead leaves the mark visibly taller than the word. */
+.sf-badge-mark {
+  flex: none;
+  height: 10px;
+  width: calc(10px * 0.7917);
+  background: currentColor;
+  -webkit-mask-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACYAAAAwCAYAAAB9sggoAAAFyklEQVR42sWZXYxV1RmGn3PmjKAIKrXphRTRXljR4E9TQZoaDaISpZgagybaGNRqlKZJLwj9MRoTqqa1NjXcIDpqqxdeqKVC/I3Gf60GJGnVaCtqtGkRBoGZEWbmPF74bf3c7nPmzJQZd7JyTva791rv+r73e/dae9fUGl/fUQO6gMH4/wtgBbCp8TWS6gKGgCbwfWAVsDCw/VFrE9y61IaKOk29Se3zs2OHulKdPNHEuoMQ6hJ1s18c69TjC5wJjFI9Bj1cvTsRekddlghPnQhi9RSlmnqV+kEQ2quuUWcEXlevVt9SHxxPYo0UhZPUx1OUXlbPTPi8Ev4i4xSlRkrLb9XdMeB29Rp1SuAHqzeou5L4f6Xu86rM4l5cEvff1OMSfq76WsLXqycWaWccxD1D7VGHk7gvTYSOUO9Um4G/q16W8Cn7Qvz1UpQui4FUh9Tb1G8ncV+lvh/4oLpWnZnwn6lvqD3sI3Efrz6c0vKqek7C56qPJvzv6qKEz1efSPhT/J/inhxi3hEdblWvLbxIPUhdlcS9PfBC/IeE8xfF0RvOP2rx5ygtiLIvjvvVYxP+I3VTSdwnJPzHFcUxaufPz7dD1VvDIFX/rV6SBpyp3pHEv0W9POHfCedvtnD+2eqhjNICzlffjA6HQ9wzEn5pECnEf3uFuMvOf1jytFvUAfUVOrSAWeo9Keybwqey+B9K+MZIZYGfXBL3S+oZpbQWE/5E/ZgOLODyNMt+9caYHer+6i9D1Kr/U6+L5UwRhRuTuLepv4n7yhMeVj8OYlupEHctbpoTgi2Op9UfJsKnqs8l/EH1mJKzt3P+K9X/BLY7Wn8Q20ZFxU2KWfXGTR+pK+J8If5booMq554Vzj6ciiOL+zh1Q9LZziA0kIhtJ+mpiMKLpVnOSZ2ep/4z4T2xvsppz86flzXFhHcGvjNWrgMVxLaRIrUyWcB7pRI/Qr0rEdocqcriX19y/rMTfloI3iCwKxHpT8QGMjHU5anTv5Qs4Kfp+dYfTj09Of+vU9rLzj890r43RSmTqGqfp/LYqAZj0GyU69qI/zT1+YQ/UHL+JerrgfWlKA10Smxt3PxMdNgduluUSnxFspBvqDcn8W8piTuv6ZsdRqmS2LvRQaGp/VJBLFS/W3r+/aMk/pmltH+YotQ3CkJfIVZUyYIKLytaV1RkK/HPqbCATgh80uJ8byO25wAHxDa9vH2vxTX/Ap4FngNuAnqBSbGtXwlMA3YDdaC7zSsBKsZplq6T0FZT/VMpleVGqZ2ivpCeb7sqSr8ciT0t2ldSWQd6gvXFwPeAvTHjrph9Pf4XUZgO/AF4DJgXUWoCjeinVhGlejpvtPZvW9RuYANweqTrJ8DzLa5fEmk8ChgIQl0dps0vpeqLSZSJ1oD+WryGmgE8DMwGdgH3AH8F3ouBjwYuAhZHJ30RoU51RMXgzYhkS2JdwDDwLeCPwAVxQRPYEzdPinP98VtvQarqvC3Im8g3y8TqKR3/BS4ElgJvpdkMRYT6kuZGQ8qKaDoC8c87ayaR3wfMB1YD+4WN2IZQqwHsMHojztJUXR8By4GzgE3AgXHt8AjEbKO5UR1VURiO8w3gCeAHwPVxfkqk1jbkmiX9lMnZCfHaCC+Hi/ekACcAvwMWxJNgT5vKpIWnWSLdSvx9I+lmOD1iNobXLQd2RHqH4horUpmjVzbbMaWyKj1D6UmwGpgbRXIgMDlFlQ4F33FVdnIUs+8G3glbWRomPDXwZouBmm1so/L6+hgKpoheYS1zgTVhKwe0KY6cWtuQqgODYyFGik4D2ApcASwCNkf0aGMtjtBvA3h9rMSqrOWRMOZVkaqRrKUV6RrQM5JdjOUTDPEJ5vfAKR1aC7HcmgY8CZzJOL7Xr6s/j518sfXbXVpIFueKTzZvx06+xgR8CTlSvTftLQfTen8w7abWpf1sV22cPwvmPcXpwDLgJOCboaWtYdx/jvVfIYnmpwFnwuVvA+MTAAAAAElFTkSuQmCC");
+  mask-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACYAAAAwCAYAAAB9sggoAAAFyklEQVR42sWZXYxV1RmGn3PmjKAIKrXphRTRXljR4E9TQZoaDaISpZgagybaGNRqlKZJLwj9MRoTqqa1NjXcIDpqqxdeqKVC/I3Gf60GJGnVaCtqtGkRBoGZEWbmPF74bf3c7nPmzJQZd7JyTva791rv+r73e/dae9fUGl/fUQO6gMH4/wtgBbCp8TWS6gKGgCbwfWAVsDCw/VFrE9y61IaKOk29Se3zs2OHulKdPNHEuoMQ6hJ1s18c69TjC5wJjFI9Bj1cvTsRekddlghPnQhi9RSlmnqV+kEQ2quuUWcEXlevVt9SHxxPYo0UhZPUx1OUXlbPTPi8Ev4i4xSlRkrLb9XdMeB29Rp1SuAHqzeou5L4f6Xu86rM4l5cEvff1OMSfq76WsLXqycWaWccxD1D7VGHk7gvTYSOUO9Um4G/q16W8Cn7Qvz1UpQui4FUh9Tb1G8ncV+lvh/4oLpWnZnwn6lvqD3sI3Efrz6c0vKqek7C56qPJvzv6qKEz1efSPhT/J/inhxi3hEdblWvLbxIPUhdlcS9PfBC/IeE8xfF0RvOP2rx5ygtiLIvjvvVYxP+I3VTSdwnJPzHFcUxaufPz7dD1VvDIFX/rV6SBpyp3pHEv0W9POHfCedvtnD+2eqhjNICzlffjA6HQ9wzEn5pECnEf3uFuMvOf1jytFvUAfUVOrSAWeo9Keybwqey+B9K+MZIZYGfXBL3S+oZpbQWE/5E/ZgOLODyNMt+9caYHer+6i9D1Kr/U6+L5UwRhRuTuLepv4n7yhMeVj8OYlupEHctbpoTgi2Op9UfJsKnqs8l/EH1mJKzt3P+K9X/BLY7Wn8Q20ZFxU2KWfXGTR+pK+J8If5booMq554Vzj6ciiOL+zh1Q9LZziA0kIhtJ+mpiMKLpVnOSZ2ep/4z4T2xvsppz86flzXFhHcGvjNWrgMVxLaRIrUyWcB7pRI/Qr0rEdocqcriX19y/rMTfloI3iCwKxHpT8QGMjHU5anTv5Qs4Kfp+dYfTj09Of+vU9rLzj890r43RSmTqGqfp/LYqAZj0GyU69qI/zT1+YQ/UHL+JerrgfWlKA10Smxt3PxMdNgduluUSnxFspBvqDcn8W8piTuv6ZsdRqmS2LvRQaGp/VJBLFS/W3r+/aMk/pmltH+YotQ3CkJfIVZUyYIKLytaV1RkK/HPqbCATgh80uJ8byO25wAHxDa9vH2vxTX/Ap4FngNuAnqBSbGtXwlMA3YDdaC7zSsBKsZplq6T0FZT/VMpleVGqZ2ivpCeb7sqSr8ciT0t2ldSWQd6gvXFwPeAvTHjrph9Pf4XUZgO/AF4DJgXUWoCjeinVhGlejpvtPZvW9RuYANweqTrJ8DzLa5fEmk8ChgIQl0dps0vpeqLSZSJ1oD+WryGmgE8DMwGdgH3AH8F3ouBjwYuAhZHJ30RoU51RMXgzYhkS2JdwDDwLeCPwAVxQRPYEzdPinP98VtvQarqvC3Im8g3y8TqKR3/BS4ElgJvpdkMRYT6kuZGQ8qKaDoC8c87ayaR3wfMB1YD+4WN2IZQqwHsMHojztJUXR8By4GzgE3AgXHt8AjEbKO5UR1VURiO8w3gCeAHwPVxfkqk1jbkmiX9lMnZCfHaCC+Hi/ekACcAvwMWxJNgT5vKpIWnWSLdSvx9I+lmOD1iNobXLQd2RHqH4horUpmjVzbbMaWyKj1D6UmwGpgbRXIgMDlFlQ4F33FVdnIUs+8G3glbWRomPDXwZouBmm1so/L6+hgKpoheYS1zgTVhKwe0KY6cWtuQqgODYyFGik4D2ApcASwCNkf0aGMtjtBvA3h9rMSqrOWRMOZVkaqRrKUV6RrQM5JdjOUTDPEJ5vfAKR1aC7HcmgY8CZzJOL7Xr6s/j518sfXbXVpIFueKTzZvx06+xgR8CTlSvTftLQfTen8w7abWpf1sV22cPwvmPcXpwDLgJOCboaWtYdx/jvVfIYnmpwFnwuVvA+MTAAAAAElFTkSuQmCC");
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+}
+
+/* ============ What a release closed ============
+   A release entry names the requests it resolved, and the request says
+   which version resolved it. Quiet: it is a fact about the item, not a
+   call to action. */
+.tl-shipped {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 10px;
+  margin-top: 12px;
+}
+.tl-shipped-lab {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.tl-shipped-item {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  color: var(--ink-2);
+  text-decoration: none;
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  transition: background-color 160ms var(--ease-out), color 160ms var(--ease-out);
+}
+.tl-shipped-item:hover,
+.tl-shipped-item:focus-visible {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
+}
+
+.shipped-in {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 550;
+  color: var(--accent);
+  text-decoration: none;
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+.shipped-in svg { width: 13px; height: 13px; }
+.shipped-in:hover { background: color-mix(in srgb, var(--accent) 17%, transparent); }
+
+/* ============ Document pages (privacy, terms) ============
+   Calm long-form prose inside the content panel: a ~720px measure,
+   the site's type scale, quiet section rhythm. */
+
+.doc { max-width: 720px; }
+
+.doc-head { margin-bottom: 26px; }
+
+.doc-head h1 {
+  font-size: 27px;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+  color: var(--home-ink);
+  transition: color 280ms var(--ease-out);
+}
+
+.doc-updated {
+  margin-top: 8px;
+  font-size: 12.5px;
+  color: var(--ink-3);
+}
+
+.doc h2 {
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -0.014em;
+  line-height: 1.3;
+  color: var(--ink);
+  margin: 34px 0 10px;
+}
+
+.doc p {
+  font-size: 13.5px;
+  line-height: 1.7;
+  color: var(--ink-2);
+  margin: 0 0 10px;
+  text-wrap: pretty;
+}
+
+.doc ul { margin: 0 0 12px 18px; }
+
+.doc li {
+  font-size: 13.5px;
+  line-height: 1.7;
+  color: var(--ink-2);
+  margin-top: 5px;
+}
+
+.doc strong { color: var(--ink); font-weight: 700; }
+
+.doc a {
+  color: var(--accent-ink);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* Data-controller card: the address block as a quiet framed card */
+.doc-card {
+  margin: 12px 0 16px;
+  padding: 15px 18px;
+  max-width: 460px;
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: 13px;
+  box-shadow: var(--shadow-card);
+  font-size: 13.5px;
+  line-height: 1.7;
+  color: var(--ink-2);
+  transition: background-color 280ms var(--ease-out), border-color 280ms var(--ease-out);
+}
+
+.doc-card strong { color: var(--ink); }
+
+@media (max-width: 767px) {
+  .doc-head h1 { font-size: 22px; }
+  .doc h2 { margin-top: 28px; }
+  .view.is-active { margin-bottom: 40px; }
+  .site-footer { padding-top: 14px; }
+}
+
+
+/* Monogram fallback: shown in place of a product icon when no icon file
+   is configured, which is the normal state for a fresh install. It carries
+   the .picon class too, so it inherits that element's size in every
+   context; the viewBox makes the letter scale to match. */
+.picon-mono {
+  color: var(--pc, var(--accent));
+  overflow: visible;
+}
+
+/* ============================================================
+   Platform pill: "macOS", "VS Code extension", "API".
+
+   A glyph and the buyer's own word. The glyph is what lets a studio with
+   four different KINDS of product tell them apart at a glance; the word is
+   what keeps it honest when the platform is something no glyph covers.
+   ============================================================ */
+.plat {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0;
+  white-space: nowrap;
+  /* One step darker than --ink-3: at 11px beside a 14.5px bold name, the
+     lighter grey read as disabled rather than as secondary. */
+  color: var(--ink-2);
+  opacity: 0.82;
+}
+
+/* 13px, not 11: below about 12 these lose the stroke detail that makes them
+   recognisable, which is the only reason they are here rather than a chip. */
+.plat-ico { display: block; width: 13px; height: 13px; }
+.plat-ico svg { display: block; width: 100%; height: 100%; }
+
+/* The name and its pill are one line that must not wrap or push the row. */
+.d1-name { display: inline-flex; align-items: center; gap: 8px; min-width: 0; }
+.board-title { display: inline-flex; align-items: baseline; gap: 10px; }
+/* The board title is much larger than a card name, so the pill sits on the
+   baseline there rather than centred, or it floats mid-cap. */
+.board-title .plat { align-self: center; position: relative; top: 0.5px; }
+
+/* A generated icon takes its product's own accent.
+
+   Both the glyph and the monogram are drawn with currentColor so that one
+   file can serve every product, which only works if something sets that
+   colour. Without this they all inherit the page ink and a board of twelve
+   products is twelve identical grey marks, which is most of what made the
+   old monogram look unfinished. `--pc` is set on every element that carries
+   a product: the sidebar row, the picker card, the board header. */
+.picon-glyph,
+.picon-mono {
+  color: var(--pc, var(--accent));
+}
+
+/* The Clients section, which only appears on an agency's own view: a
+   product carries a `client` there and nowhere else. A swatch rather than
+   an icon, because a client is not a product and should not look like one
+   in the list directly above the products. */
+.side-swatch {
+  flex: none;
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  background: var(--pc, var(--accent));
+  margin-left: 3px;
+  margin-right: 4px;
+}
+.clients-block .side-item { gap: 9px; }
+.clients-block .side-count {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+}

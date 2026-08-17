@@ -1,0 +1,41 @@
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Build output
+dist/
+dist-agency/
+
+# Dependencies
+node_modules/
+
+# Hosting
+.vercel
+.netlify
+.wrangler
+
+# macOS
+.DS_Store
+
+# Local scratch
+.hold/
+.dryrun/
+release-build/
+releases/
+
+# Demo tour output
+demo-site/
+website/demo/
+
+# iCloud Drive sync duplicates. Sixteen of these ("config 2.js",
+# "products 2.json") reached a commit before anyone noticed, because
+# `git add -A` cannot tell them from real files.
+* 2.*
+* 3.*
+* 2
+* 3
+
+# Empty CLAUDE.md stubs the claude-mem tool drops into whatever directory
+# is being worked in. They carry nothing and one reached a commit.
+CLAUDE.md

@@ -1,0 +1,148 @@
+<!-- ============================================================
+     The Docket support callout.
+
+     Paste this anywhere on your own product's site. Change the four
+     things listed in kit/callout/README.md and nothing else needs doing:
+     no build step, no script, no request to anything.
+
+     Every class is namespaced .dkc- so it cannot collide with your own
+     styles, and the card inherits your page's font on purpose. It should
+     look like part of your site rather than something pasted onto it.
+     ============================================================ -->
+
+<style>
+.dkc {
+  /* The four things worth changing live here. */
+  --dk-accent: #44586B;
+  --dk-ink: #161c21;
+  --dk-ink-2: #5b6570;
+  --dk-surface: #ffffff;
+  --dk-line: rgba(20, 30, 40, 0.10);
+
+  box-sizing: border-box;
+  display: block;
+  max-width: 640px;
+  padding: 26px 28px;
+  border-radius: 16px;
+  background: var(--dk-surface);
+  box-shadow:
+    0 0 0 1px var(--dk-line),
+    0 1px 2px rgba(16, 24, 32, 0.04),
+    0 18px 40px -24px rgba(16, 24, 32, 0.30);
+  /* No font-family: it takes your page's, deliberately. */
+  color: var(--dk-ink);
+  line-height: 1.55;
+  position: relative;
+  overflow: hidden;
+}
+.dkc *, .dkc *::before, .dkc *::after { box-sizing: border-box; }
+
+/* A wash of your colour across the top, so the card is tinted by the
+   brand rather than merely trimmed with it. */
+.dkc::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 90px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--dk-accent) 10%, transparent), transparent);
+  pointer-events: none;
+}
+
+.dkc-in { position: relative; }
+
+.dkc-eyebrow {
+  margin: 0 0 6px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--dk-accent) 78%, #0d1418);
+}
+.dkc-title {
+  margin: 0 0 6px;
+  font-size: 19px;
+  font-weight: 650;
+  letter-spacing: -0.018em;
+  line-height: 1.25;
+  color: var(--dk-ink);
+}
+.dkc-sub {
+  margin: 0 0 18px;
+  font-size: 14px;
+  color: var(--dk-ink-2);
+  max-width: 46ch;
+}
+
+.dkc-links { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.dkc-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 550;
+  text-decoration: none;
+  color: var(--dk-ink);
+  background: color-mix(in srgb, var(--dk-accent) 8%, transparent);
+  box-shadow: inset 0 0 0 1px transparent;
+  transition: background-color 180ms cubic-bezier(.2,0,0,1),
+              box-shadow 180ms cubic-bezier(.2,0,0,1),
+              color 180ms cubic-bezier(.2,0,0,1);
+}
+.dkc-link:hover,
+.dkc-link:focus-visible {
+  color: color-mix(in srgb, var(--dk-accent) 82%, #0d1418);
+  background: color-mix(in srgb, var(--dk-accent) 14%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--dk-accent) 30%, transparent);
+}
+.dkc-link:focus-visible { outline: 2px solid var(--dk-accent); outline-offset: 2px; }
+.dkc-link svg { width: 15px; height: 15px; flex: none; opacity: .8; }
+
+/* Dark mode. If your site switches theme with a class or an attribute
+   rather than the system setting, change this one selector to match and
+   everything inside it follows. */
+@media (prefers-color-scheme: dark) {
+  .dkc {
+    --dk-ink: rgba(240, 244, 250, 0.95);
+    --dk-ink-2: rgba(214, 222, 234, 0.68);
+    --dk-surface: #171b20;
+    --dk-line: rgba(255, 255, 255, 0.12);
+  }
+  .dkc-eyebrow,
+  .dkc-link:hover,
+  .dkc-link:focus-visible { color: color-mix(in srgb, var(--dk-accent) 34%, #eaf1f8); }
+}
+
+@media (max-width: 480px) {
+  .dkc { padding: 22px; }
+  .dkc-links { gap: 6px; }
+}
+</style>
+
+<div class="dkc">
+  <div class="dkc-in">
+    <p class="dkc-eyebrow">Support</p>
+    <h2 class="dkc-title">Something not working, or an idea?</h2>
+    <p class="dkc-sub">
+      Report it, request it, or see what we are building next. No account
+      needed, and a person reads every one.
+    </p>
+
+    <div class="dkc-links">
+      <a class="dkc-link" href="https://support.example.com/example-co/bugs/">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2.2 14 13H2Z"/><path d="M8 6.6v3M8 11.2v.1"/></svg>
+        Report a Bug
+      </a>
+      <a class="dkc-link" href="https://support.example.com/example-co/features/">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2.4a3.6 3.6 0 0 1 2.2 6.5c-.5.4-.8 1-.8 1.6H6.6c0-.6-.3-1.2-.8-1.6A3.6 3.6 0 0 1 8 2.4Z"/><path d="M6.7 13h2.6"/></svg>
+        Request a Feature
+      </a>
+      <a class="dkc-link" href="https://support.example.com/example-co/roadmap/">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.2 14V2.4"/><path d="M4.2 3.1h7.4L10 5.5l1.6 2.4H4.2"/></svg>
+        Roadmap
+      </a>
+    </div>
+  </div>
+</div>
