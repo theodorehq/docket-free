@@ -42,11 +42,18 @@ List whatever you support. There is no limit, on any tier.
 `id` is short and lowercase and becomes part of the web address, so it is
 worth getting right: changing it later breaks links.
 
-Then clear the example content so your board starts empty:
+Your board is now empty, which is correct. The example content lives in
+`data.example/` and stops being used the moment `products.json` exists,
+so there is nothing to delete.
+
+If you would rather look around a populated board first, copy it in:
 
 ```bash
-rm -rf data
+cp -R data.example data
 ```
+
+It is demo content for invented products, so delete it (`rm -rf data`)
+before you go live.
 
 ---
 

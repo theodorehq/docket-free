@@ -6,6 +6,21 @@
 //   node scripts/test-api-local.mjs
 
 process.env.SUPPORT_API_DRYRUN = '1';
+/* Pin the whole suite to the shipped examples: the example config and the
+   example board, whatever this install happens to be configured as.
+
+   This suite tests the ENGINE, so its assertions name the example board's
+   items and the example address. Read through the ordinary rules it passed
+   207 of 207 on an untouched template and failed 7 the moment products.json
+   existed, which is step 2 of SETUP.md. Since UPDATE.md asks the buyer's
+   agent to run it after every update, every buyer would have seen failures
+   about products called Aurora and Pico they had never heard of, on an
+   install that was working perfectly.
+
+   Pinned, it means the same thing on every install: does this engine still
+   work. Set before any dynamic import, because lib/config.mjs decides which
+   file to read once, when it is first loaded. */
+process.env.DOCKET_FIXTURES = '1';
 process.env.N8N_WEBHOOK_URL = 'https://n8n.example/webhook/support-test';
 // A fresh random key per run, so the suite exercises real encryption
 // rather than the no-key degradation path, and no key material is ever
@@ -20,9 +35,13 @@ import { resolveForRead } from '../lib/data-root.mjs';
 const repoRoot = fileURLToPath(new URL('..', import.meta.url));
 const dryRoot = path.join(repoRoot, '.dryrun');
 
-// Content lives in data/ once you have your own, and in data.example/ on an
-// untouched template. lib/data-root.mjs owns that rule; ask it rather than
-// deciding again here, so the suite reads what the API reads.
+/* Where to read a fixture from. lib/data-root.mjs owns the rule and, in
+   fixtures mode, points at data.example/ regardless of what this install
+   has. Ask it rather than deciding again here, so the suite reads exactly
+   what the API under test reads.
+
+   Writes are unaffected: they go to .dryrun/, so the examples are never
+   edited and neither is anyone's real content. */
 function sourcePath(repoPath) {
   return resolveForRead(repoPath, repoRoot);
 }

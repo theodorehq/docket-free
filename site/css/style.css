@@ -191,11 +191,42 @@
 /* Per-product accent, swapped on one wrapper attribute.
    Derivations are computed on body (per-product board pages set --accent
    via the body[data-product] rule). */
+/* The ambient washes use a chroma-capped accent, not the accent itself.
+
+   The frame tint, the glow field and the product icon's halo are all a
+   percentage of --accent spread over a large soft area. A percentage is
+   the right control for HOW MUCH colour, and the wrong one for HOW
+   SATURATED it is, so the same 9% reads calm in a muted green and hot in
+   a vivid blue. Measured in oklch chroma, the accents this was tuned
+   against sit between 0.075 and 0.175; the macOS system blue is 0.218,
+   and at that saturation the whole frame looks like it is glowing.
+
+   In a support centre for one company you can special-case the offender,
+   which is what the live Theodore HQ install does for Chorus. Docket
+   cannot: the accent is whatever the buyer put in their config, we never
+   see it, and the only place to fix it would be an engine file their
+   updater then flags as edited forever.
+
+   So the cap does the work instead. Anything at or below the ceiling
+   passes through untouched, and only over-saturated accents are pulled
+   back, by exactly the amount they overshoot. The lightness and hue are
+   left alone, so it stays recognisably the buyer's colour.
+
+   Two ceilings because the two uses are not equally sensitive: the flat
+   washes tolerate more than the icon's drop-shadow, which is nearly
+   full-strength accent and blooms. Both are declared twice so browsers
+   without relative colour syntax keep the old behaviour rather than
+   losing the variable entirely. */
 body {
+  --accent-wash: var(--accent);
+  --accent-wash: oklch(from var(--accent) l min(c, 0.16) h);
+  --accent-glow: var(--accent);
+  --accent-glow: oklch(from var(--accent) l min(c, 0.13) h);
+
   --accent-ink: color-mix(in srgb, var(--accent) var(--accent-mix-pct), var(--accent-mix-base));
   --accent-tint: color-mix(in srgb, var(--accent) var(--accent-tint-pct), transparent);
   --accent-tint-2: color-mix(in srgb, var(--accent) var(--accent-tint2-pct), transparent);
-  --glow-1: color-mix(in srgb, var(--accent) 8%, transparent);
+  --glow-1: color-mix(in srgb, var(--accent-wash) 8%, transparent);
   /* Deep accent: a dark, saturated take on the product colour for the
      official-reply pill. Fixed dark base (not theme-mixed) so the pill
      reads the same rich navy/forest/amber in light and dark. */
@@ -217,10 +248,10 @@ body {
      frame around the panel breathes the product colour. */
   --canvas-mix: 2%;
   --side-tint: 5%;
-  background: color-mix(in srgb, var(--accent) var(--canvas-mix), var(--canvas));
+  background: color-mix(in srgb, var(--accent-wash) var(--canvas-mix), var(--canvas));
   /* The stronger top tint spans the WHOLE frame (not just the sidebar
      column) so the colour wraps continuously around the content panel. */
-  background-image: linear-gradient(180deg, color-mix(in srgb, var(--accent) var(--side-tint), transparent), transparent 62%);
+  background-image: linear-gradient(180deg, color-mix(in srgb, var(--accent-wash) var(--side-tint), transparent), transparent 62%);
   color: var(--ink);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -1025,12 +1056,12 @@ body:not([data-view="board"]) .board-nav .count { display: none; }
 .board-head .picon {
   width: 42px; height: 42px;
   flex-shrink: 0;
-  filter: drop-shadow(0 6px 18px color-mix(in srgb, var(--accent) 55%, transparent));
+  filter: drop-shadow(0 6px 18px color-mix(in srgb, var(--accent-glow) 55%, transparent));
   transition: filter var(--accent-ms) var(--ease-out);
 }
 
 [data-theme="dark"] .board-head .picon {
-  filter: drop-shadow(0 6px 22px color-mix(in srgb, var(--accent) 75%, transparent));
+  filter: drop-shadow(0 6px 22px color-mix(in srgb, var(--accent-glow) 75%, transparent));
 }
 
 .board-head h1,
