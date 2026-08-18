@@ -25,6 +25,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { env } from '../lib/env.mjs';
+import { providerFor, emailKeyNames } from '../lib/email-provider.mjs';
 import { validateData } from './validate-data.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');

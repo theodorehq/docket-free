@@ -3326,10 +3326,10 @@ body[data-view="board"] .tl-notes { border-color: color-mix(in srgb, var(--accen
 
      It shares its row with the status word on the right, so the text
      column is about 280px, and a platform label as long as "VS Code
-     extension" pushes it narrower still. On the Solo home that was
-     enough to turn "Reviews your pull requests." into "Reviews your
-     pull req...", which is the tagline failing at the only job it has.
-     Nothing here is a fixed height, so it can simply have two lines. */
+     extension" pushes it narrower still. On a home page listing four
+     products that was enough to turn "Reviews your pull requests." into
+     "Reviews your pull req...", which is the tagline failing at the only
+     job it has. Nothing here is a fixed height, so it can have two. */
   .d1-tag { white-space: normal; overflow: visible; text-overflow: clip; }
 
   /* Small links get a thumb-sized target.

@@ -1,12 +1,8 @@
 # Docket releases
 
-## 1.0.1 - 2026-08-17
+## 1.0.2 - 2026-08-18
 
-Ambient frame tint now adapts to your accent colour, so a vivid brand colour sits as calmly as a muted one. The engine test suite reads its own example board rather than your settings, so it gives the same answer on every install. Clearer setup and update instructions.
-
-## 1.0.1 - 2026-08-17
-
-Ambient frame tint now adapts to your accent colour, so a vivid brand colour sits as calmly as a muted one. The engine test suite reads its own example board rather than your settings, so it gives the same answer on every install. Clearer setup and update instructions.
+Choose your email provider: Resend, Postmark, SendGrid or Mailgun, set in config.js. And a new digest, off by default, that sends one email describing what happened on your board instead of one per event, daily or hourly in your own timezone.
 
 ## 1.0.1 - 2026-08-17
 
