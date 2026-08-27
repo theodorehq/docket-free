@@ -71,6 +71,53 @@
     });
   }
 
+  /* ================= Section strip =================
+     Phone only; the element is display:none at every other width.
+
+     The strip is server-rendered and works as served. Two things here stop
+     it hiding half of itself: the marked tab is scrolled into view, and
+     whichever edge still has something behind it is faded. A tab cut off
+     mid-word with nothing on screen to say it can be reached is the
+     commonest way a phone layout loses content without ever scrolling the
+     page sideways.
+
+     scrollLeft is assigned rather than scrollIntoView called: that is free
+     to scroll every ancestor including the document, which would jump the
+     page on load. */
+
+  var secStrip = document.getElementById("secStrip");
+
+  if (secStrip) {
+    var stripRevealed = false;
+
+    function stripEdges() {
+      var max = secStrip.scrollWidth - secStrip.clientWidth;
+      secStrip.dataset.edge = max < 2 ? "none"
+        : secStrip.scrollLeft < 2 ? "start"
+        : secStrip.scrollLeft > max - 2 ? "end" : "mid";
+    }
+
+    function stripSync() {
+      /* clientWidth is 0 while the strip is hidden, which is every width
+         above the phone breakpoint. Nothing to measure and nothing to do. */
+      if (!secStrip.clientWidth) return;
+      var max = secStrip.scrollWidth - secStrip.clientWidth;
+      if (!stripRevealed && max > 1) {
+        var cur = secStrip.querySelector(".secs.is-active");
+        if (cur) {
+          var to = cur.offsetLeft - (secStrip.clientWidth - cur.offsetWidth) / 2;
+          secStrip.scrollLeft = Math.max(0, Math.min(to, max));
+        }
+        stripRevealed = true;
+      }
+      stripEdges();
+    }
+
+    secStrip.addEventListener("scroll", stripEdges, { passive: true });
+    if (window.ResizeObserver) new ResizeObserver(stripSync).observe(secStrip);
+    stripSync();
+  }
+
   /* ================= Search =================
      A quiet "Search /" chip that expands into a live filter
      field. Filters kanban cards or FAQ items on this page;
@@ -216,6 +263,39 @@
       faqItems.forEach(function (other) { if (other !== item) setFaqOpen(other, false); });
       setFaqOpen(item, !wasOpen);
     });
+  });
+
+  /* ================= Status filter edge fade =================
+     The filter bar is a sideways scroller on a phone and there is
+     nothing at its edge to say so. This softens whichever edge still
+     has chips behind it and leaves the other one crisp, so the bar
+     says which way it can travel and stops saying it at the end.
+
+     The widths land on the bar as two custom properties; the mask that
+     reads them lives in the stylesheet, under the same breakpoint that
+     makes the bar scroll in the first place. Nothing here needs to know
+     the width: above that breakpoint the mask is not applied and these
+     numbers are ignored. */
+
+  /* The same 22px the content panel fades its own top and bottom edge by,
+     because it is the same idea in the other direction. */
+  var FADE = 22;
+
+  function syncEdgeFade(bar) {
+    var travel = bar.scrollWidth - bar.clientWidth;
+    var at = bar.scrollLeft;
+    /* Under two pixels of travel is sub-pixel rounding, not a scroller,
+       and fading an edge that cannot move would be a lie. */
+    if (travel < 2) { at = 0; travel = 0; }
+    bar.style.setProperty("--fade-l", Math.min(FADE, Math.max(0, at)) + "px");
+    bar.style.setProperty("--fade-r", Math.min(FADE, Math.max(0, travel - at)) + "px");
+  }
+
+  Array.prototype.slice.call(document.querySelectorAll(".stchoose")).forEach(function (bar) {
+    var sync = function () { syncEdgeFade(bar); };
+    bar.addEventListener("scroll", sync, { passive: true });
+    window.addEventListener("resize", sync);
+    sync();
   });
 
   /* ================= Voting =================

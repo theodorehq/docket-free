@@ -1,5 +1,9 @@
 # Docket releases
 
+## 1.0.3 - 2026-08-27
+
+_Notes still to be written._
+
 ## 1.0.2 - 2026-08-18
 
 Choose your email provider: Resend, Postmark, SendGrid or Mailgun, set in config.js. And a new digest, off by default, that sends one email describing what happened on your board instead of one per event, daily or hourly in your own timezone.

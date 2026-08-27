@@ -1147,6 +1147,20 @@ body:not([data-view="board"]) .board-nav .count { display: none; }
 
 .board-visit:active { transform: scale(0.97); }
 
+/* ============ Section strip ============
+
+   A phone-only row of the product's sections, sitting above the content.
+   Nothing here on a desktop or a tablet, where the sidebar is beside the
+   content and already carries the same list: this is what replaces it once
+   the sidebar becomes a drawer and moving between sections costs two taps.
+
+   Declared hidden here rather than only inside the phone block so it can
+   never flash in on a wide screen before the media query is read, and so
+   the screen-reader heading it carries cannot become a second h1 on a
+   desktop, where the header it stands in for is still on the page. */
+.secstrip-row { display: none; }
+
+
 /* ============ Status glyphs ============
    One glyph family across kanban column heads: 13px circles,
    1.5px strokes, state-coloured. */
@@ -2301,6 +2315,27 @@ body[data-view="board"] .ov-faq:hover {
     grid-auto-columns: max-content;
     overflow-x: auto;
     scrollbar-width: none;
+
+    /* Six chips need about 620px and have about 320px, so half the
+       filters are off the right edge. A bar cut off flat at the edge
+       reads as a bar that ends there: the chips it is hiding are the
+       ones somebody came to the page to press.
+
+       So the edge it can still travel towards is softened and the edge
+       it cannot is left crisp, which is the whole message - a soft edge
+       means more that way, a hard edge means that is all of them. The
+       two widths come from a scroll listener in app.js, at the same 22px
+       the content panel fades its own edges by, so at rest the left edge
+       is hard and the right is soft, and at the far end they swap. With
+       no script they are both 0 and the bar is exactly what it is today.
+
+       It is a mask on the scroller rather than something drawn inside
+       it: anything inside a scroller scrolls away with the chips, so it
+       would fade the edge for a moment and then wander off it. */
+    --fade-l: 0px;
+    --fade-r: 0px;
+    -webkit-mask-image: linear-gradient(to right, transparent 0, #000 var(--fade-l), #000 calc(100% - var(--fade-r)), transparent 100%);
+    mask-image: linear-gradient(to right, transparent 0, #000 var(--fade-l), #000 calc(100% - var(--fade-r)), transparent 100%);
   }
   .stchoose::-webkit-scrollbar { display: none; }
   .stc { padding: 8px 13px; }
@@ -3201,6 +3236,59 @@ body[data-view="board"] .tl-notes { border-color: color-mix(in srgb, var(--accen
   .tgrid { grid-template-columns: repeat(2, 1fr); }
 }
 
+/* ============ Touch hit areas ============
+
+   Four small controls kept their looks and gained a finger. Each one is
+   the right size on screen and too small to hit: a "+" drawn at 22px is a
+   22px target, and a fingertip is nearer 44.
+
+   The size on screen is not the thing that is wrong, so the size on screen
+   does not change. Every rule here adds an invisible ::after stretched
+   past the control's own edges, which moves the hit area and nothing else:
+   no reflow, no control growing into the space beside it, and the diff
+   reads as what it is.
+
+   Gated on hover rather than a width, like the "+" in the sidebar already
+   is a few hundred lines up. A mouse hits 22px on the first try at any
+   window size, so a narrow desktop window wants none of this; a tablet in
+   landscape is 1024px wide and wants all of it.
+
+   The insets are measured, not guessed, and each is bounded by whatever
+   sits next to it. Two hit areas that overlap are a worse bug than one
+   that is small, because at least a small target fails honestly. */
+@media (hover: none) {
+
+  /* The sidebar "+". Its row is 43px tall on a pitch of 44, so 44x44 lands
+     exactly on the row's own top and bottom: the "+" for Bugs owns the
+     right-hand end of the Bugs row and not one pixel of Features. It sits
+     34px clear of the row's text, so the label keeps everything it had. */
+  .side-add::after { content: ""; position: absolute; inset: -11px; }
+
+  /* The "Report a Bug" square beside the section heading. There is no room
+     to grow downward: the search button wraps onto its own line here and
+     its top edge is 23px below this one's centre, so a square 44 area would
+     leave them sharing a boundary. It takes the height it needs from above
+     instead, where there is nothing but the tagline, and text cannot be
+     pressed. That keeps 4px of genuine dead space above the search button.
+     What it does reach on the left is the tail of the heading, which is a
+     heading: nothing happens when it is pressed either way. */
+  .section-add-sq { position: relative; }
+  .section-add-sq::after { content: ""; position: absolute; inset: -13px -10px -8px; }
+
+  /* The modal's X. The panel's own padding gives it 23px of clear space
+     above and to the right, and the gap to the title gives it 12px on the
+     left, so 8px is comfortably inside all three. */
+  .modal-close { position: relative; }
+  .modal-close::after { content: ""; position: absolute; inset: -8px; }
+
+  /* The drawer's wordmark, which is a link home. Height only: it already
+     runs the full width of the drawer. It has 26px of clear space above it
+     and its own 24px margin below, so 8px each way reaches neither the top
+     of the drawer nor the first product row. */
+  .brand { position: relative; }
+  .brand::after { content: ""; position: absolute; inset: -8px 0; }
+}
+
 /* ============ Phone (below 768px) ============ */
 @media (max-width: 767px) {
   .main-scroll { padding: 22px 16px 56px; }
@@ -3216,6 +3304,173 @@ body[data-view="board"] .tl-notes { border-color: color-mix(in srgb, var(--accen
      marketing site, so the header's Visit button would be a
      duplicate here - drop it and keep the header to one calm row. */
   .board-visit { display: none; }
+
+  /* ---- The section strip takes the product identity block's place ----
+
+     Measured on /bugs/ at 375x812: the mobile bar (56px) already said
+     "Tideline", the header said it again 23px lower along with the tagline
+     (99px), and the toolbar row said "Bugs" (81px) above the status filters
+     (46px). The first bug started at y=365, so 45% of the screen went before
+     any content, and none of it led anywhere: the drawer was the only way
+     from Bugs to Features.
+
+     So the header goes on the pages where it was only repeating the bar, the
+     toolbar's heading goes because the strip's marked tab says the same
+     thing, and the strip carries both jobs in one 48px row. First bug at
+     y=281.
+
+     The consolidated views keep their header, because there it describes the
+     page rather than repeating the bar: "across all Fernpost products" is
+     the one thing separating that view from a single product's board, and
+     it is written nowhere else. Its HEADING still goes, being the same word
+     the marked tab carries; the sentence under it stays. That lands those
+     pages at y=320 against 336 before, so they gain the strip and still
+     come out ahead.
+
+     The overview has no strip at all and is untouched: its panels are that
+     same list of sections, one per link, so the strip would have been the
+     six destinations twice over. */
+  .board-head:not(.board-head-all):has(+ .section-toolbar),
+  .board-head:not(.board-head-all):has(+ .detail-nav) { display: none; }
+
+  .board-head-all h1 { display: none; }
+
+  .secstrip-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    /* The same 20px the toolbar row leaves beneath itself, so the strip
+       keeps the page's existing vertical rhythm rather than starting a
+       second one. */
+    margin-bottom: 20px;
+  }
+
+  /* The heading the hidden header used to carry, for a screen reader only.
+     Clipped rather than display:none, which would take it out of the
+     accessibility tree and leave a section page with no h1 at all on a
+     phone. */
+  .secstrip-h1 {
+    position: absolute;
+    width: 1px; height: 1px;
+    margin: -1px; padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  /* Same 4px padding, same hairline, same 14px radius and the same tab
+     metrics as .stchoose, which sits below it on the boards: two rails of
+     one family rather than two unrelated bars.
+
+     The fill is --inset rather than the --surface that .stchoose uses, and
+     that is a deliberate departure. The current tab has to be a raised chip
+     on --surface for the segmented look, and --surface is #ffffff in light
+     and #1b1d24 in dark: on a rail of the same token the chip would have
+     been white on white, carried by its shadow alone in light and by
+     nothing at all in dark. So the rail steps down one and the chip steps
+     up, exactly as the landing page's control does (--sunk under
+     --panel). */
+  .secstrip {
+    position: relative;
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    gap: 4px;
+    padding: 4px;
+    border: 1px solid var(--hairline);
+    border-radius: 14px;
+    background: var(--inset);
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .secstrip::-webkit-scrollbar { display: none; }
+
+  /* The fade is a MASK on the scroller, not a gradient floating inside it:
+     a mask paints against the element's own box, so it stays at the edge
+     while the content runs under it, where an absolutely positioned overlay
+     inside an overflow box scrolls away on the first swipe. The script sets
+     data-edge, so whichever side has nothing left behind it is never
+     faded. */
+  /* The no-script state, and the state before the script's first run: the
+     box starts at scrollLeft 0, so the right is the side with something
+     behind it. The script overwrites data-edge immediately and keeps it
+     right from then on; without it the strip still scrolls and the fade
+     still says there is more. */
+  .secstrip:not([data-edge]),
+  .secstrip[data-edge="start"] {
+    -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 22px), transparent);
+    mask-image: linear-gradient(90deg, #000 calc(100% - 22px), transparent);
+  }
+  .secstrip[data-edge="end"] {
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 22px);
+    mask-image: linear-gradient(90deg, transparent, #000 22px);
+  }
+  .secstrip[data-edge="mid"] {
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 22px, #000 calc(100% - 22px), transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 22px, #000 calc(100% - 22px), transparent);
+  }
+
+  .secs {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 9px 13px;
+    border-radius: 10px;
+    font-size: 13.5px;
+    font-weight: 500;
+    line-height: 1.65;
+    color: var(--ink-2);
+    white-space: nowrap;
+    transition: background-color 180ms var(--ease-out), color 180ms var(--ease-out);
+  }
+
+  .secs.is-active {
+    background: var(--surface);
+    color: var(--ink);
+    font-weight: 650;
+    box-shadow: 0 1px 2px rgba(31, 31, 30, 0.07), 0 6px 16px -10px rgba(31, 31, 30, 0.5);
+  }
+
+  [data-theme="dark"] .secs.is-active {
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35), 0 6px 16px -10px rgba(0, 0, 0, 0.9);
+  }
+
+  /* The add button moves out of the section heading, which is gone here, and
+     onto this row at its right end. Outside the scroller: inside it, the one
+     control on the row would swipe off the screen. */
+  .secstrip-row > .section-add-sq {
+    width: 40px;
+    height: 40px;
+    margin-left: 0;
+    border-radius: 11px;
+  }
+
+  .secstrip-row > .section-add-sq svg { width: 14px; height: 14px; }
+
+  /* This copy is already 40x40, so it wants none of the invisible finger
+     area that the same class is given elsewhere on a touch screen. That
+     inset was measured against the arrangement this replaces - it grows
+     13px upward and 10px sideways, into what used to be a heading and
+     empty space. Here the strip's last tab sits 8px to the left and the
+     row above is the mobile bar, so the same inset would put a dead patch
+     over a real tab. */
+  .secstrip-row > .section-add-sq::after { content: none; }
+
+  /* The strip's marked tab already names the section, so the heading that
+     used to do it is a second copy of the same word. */
+  .section-toolbar .toolbar-label { display: none; }
+
+  /* And with the heading gone, the roadmap, changelog, testimonials and FAQ
+     rows hold nothing at all: those four carry neither a search field nor an
+     add button, so the row would be 60px of empty space above the content. */
+  .section-toolbar:not(:has(.head-tools)) { display: none; }
 
   /* Toolbar row on phones: the label keeps the first line; the
      tools wrap to a full-width line beneath it when tight, with

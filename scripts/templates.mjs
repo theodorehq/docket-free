@@ -599,6 +599,64 @@ function mobileBarHtml(ctx) {
   return html;
 }
 
+/* ---------- Section strip ----------
+
+   Phone only. At this width the sidebar is a drawer, so every move between
+   sections cost two taps: open the drawer, then pick. Nothing else on the
+   page led anywhere: the only in-page path from Bugs to Features was back
+   through the drawer, and moving between sections is the main thing anybody
+   does here.
+
+   The strip is the same list of sections the sidebar carries, in the same
+   order, as one horizontal row above the content. On the pages where the
+   product identity block only repeated what the mobile bar already says, it
+   takes that block's place rather than sitting under it.
+
+   Real markup, emitted here. These pages are static and have to work as
+   served, so the one piece of navigation on a phone cannot be something a
+   script assembles after load. */
+
+const STRIP_SECTIONS = ["overview", ...BROWSE_SECTIONS];
+
+/**
+ * @param product  the product whose board this is, or null on a consolidated
+ *                 view (which has no Overview, exactly as the sidebar has none)
+ * @param nav      the current section key, so one tab is marked
+ * @param add      the section's add action, if it has one: the same square
+ *                 that sits beside the heading on a desktop, moved onto this
+ *                 row because the heading it sat in is gone here
+ * @param heading  a screen-reader h1 for the pages whose only h1 lives in the
+ *                 header this strip replaces. Null everywhere else, or the
+ *                 page would carry two.
+ */
+export function sectionStripHtml({ product, nav, add, heading }) {
+  const isBoard = !!product;
+
+  /* Built from the same two lists the sidebar reads, so the two cannot drift
+     apart. De-duplicated by href as a guard: in the sidebar the current
+     product's own row and Overview point at the same place, so anything
+     assembled from that column instead emits Overview twice. */
+  const seen = new Set();
+  let tabs = "";
+  for (const sec of STRIP_SECTIONS) {
+    if (sec === "overview" && !isBoard) continue;
+    const href = isBoard
+      ? (sec === "overview" ? `/${product.id}/` : `/${product.id}/${sec}/`)
+      : `/${sec}/`;
+    if (seen.has(href)) continue;
+    seen.add(href);
+    const here = nav === sec;
+    tabs += `<a class="secs${here ? " is-active" : ""}" href="${href}"` +
+      (here ? ' aria-current="page"' : "") + `>${esc(SECTION_LABELS[sec])}</a>`;
+  }
+
+  return '<div class="secstrip-row">' +
+    (heading ? `<h1 class="secstrip-h1">${esc(heading)}</h1>` : "") +
+    `<nav class="secstrip" id="secStrip" aria-label="Sections">${tabs}</nav>` +
+    (add ? addSquareHtml(add.kind, add.label) : "") +
+    "</div>";
+}
+
 /* ---------- Board head ---------- */
 
 /* Section toolbar: its own row BELOW the product identity. The left
@@ -655,18 +713,63 @@ export function boardHeadHtml(product, toolsHtml, opts) {
   const visitBtn = site
     ? `<a class="board-visit" href="${esc(site)}" target="_blank" rel="noopener" aria-label="${esc(visitLabel)}">${esc(visitLabel)}</a>`
     : "";
+  /* The section strip goes BEFORE the header rather than between it and the
+     toolbar row. Half a dozen desktop rules pin this header's height and gap
+     through `.board-head:has(+ .section-toolbar)`, and a new element between
+     the two would break every one of them. Ahead of it that sibling pair is
+     untouched: 90 page-and-width combinations from 768px up measure the same
+     box for every element as they did before this existed. */
+  const nav = (opts && opts.nav) || "overview";
+  const onSection = !!(opts && opts.toolbar);
+  /* Not on the overview. That page's panels ARE this list - one per section,
+     each a link - so a strip above them is the same six destinations twice,
+     and it cost 70px on a phone to say nothing new. Everywhere else the
+     sections are unreachable without the drawer, which is the whole reason
+     the strip exists. */
+  const strip = nav === "overview" ? "" : sectionStripHtml({
+    product,
+    nav,
+    add: onSection && opts.toolbar.add ? opts.toolbar.add : null,
+    /* Section and status pages put their only h1 inside this header, and the
+       phone hides it. The strip carries the heading for them instead, which
+       also says more than the header did: every section page's h1 was the
+       product name alone. Overview keeps its header, and an item page's h1
+       is the item's own title, so neither needs one. */
+    heading: onSection ? `${product.name} ${SECTION_LABELS[nav] || ""}`.trim() : null
+  });
+
   /* The header row holds brand-level things only (identity + Visit);
      section tools live on their own toolbar row beneath, so nothing
      can crowd or overlap the product name and tagline. */
-  return '<header class="board-head">' +
+  return strip +
+    '<header class="board-head">' +
     identity +
     visitBtn +
     "</header>" +
     sectionToolbarHtml(opts && opts.toolbar, toolsHtml);
 }
 
-export function allHeadHtml(title, tagline, toolsHtml, toolbar) {
-  return '<header class="board-head">' +
+/* The consolidated views. This header is not simply dropped on a phone the
+   way a product board's is: it says what the page covers ("across all
+   Fernpost products"), which is the one thing that separates this view from
+   a single product's board and is written nowhere else on the page. The
+   phone keeps that sentence and drops the heading above it, which is the
+   same word the strip's marked tab already carries. `board-head-all` is what
+   lets the phone sheet tell the two headers apart; nothing styles it on a
+   desktop. */
+export function allHeadHtml(title, tagline, toolsHtml, toolbar, nav) {
+  const strip = sectionStripHtml({
+    product: null,
+    nav: nav || "",
+    add: toolbar && toolbar.add ? toolbar.add : null,
+    /* The phone shows this header's SENTENCE and not its heading: the
+       heading is the same word the strip's marked tab already carries, and
+       the sentence is the only place the page says what it covers. The h1
+       comes back here so the page still has exactly one. */
+    heading: title
+  });
+  return strip +
+    '<header class="board-head board-head-all">' +
     `<div><h1>${esc(title)}</h1><p class="board-tagline">${esc(tagline)}</p></div>` +
     "</header>" +
     sectionToolbarHtml(toolbar, toolsHtml);

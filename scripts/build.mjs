@@ -982,7 +982,7 @@ for (const sec of ["bugs", "features", "roadmap", "changelog", "testimonials", "
     contentHtml: T.allHeadHtml(T.SECTION_LABELS[sec], ALL_TAGLINES[sec], tools, {
       label: "All Apps",
       add: ADD_KINDS[sec] ? { kind: ADD_KINDS[sec], label: ADD_LABELS[sec] || "Add" } : null,
-    }) + body,
+    }, sec) + body,
     jsonld: sec === "faq" && allFaqs.length ? [T.faqJsonld(allFaqs)] : []
   }));
 
@@ -1004,7 +1004,7 @@ for (const sec of ["bugs", "features", "roadmap", "changelog", "testimonials", "
       path: `/${sec}/${col.slug}/`,
       contentHtml: T.allHeadHtml(T.SECTION_LABELS[sec], ALL_TAGLINES[sec], s.tools, {
         label: "All Apps", add: { kind: sec === "bugs" ? "bug" : "feature", label: ADD_LABELS[sec] },
-      }) + s.body,
+      }, sec) + s.body,
       jsonld: []
     }));
   }
@@ -1057,7 +1057,7 @@ for (const p of products) {
     title: `${p.name} - Support Centre`,
     desc: `${p.name} support hub: report bugs, request features, and follow the roadmap, changelog, and FAQ. ${p.tagline}`,
     path: `/${p.id}/`,
-    contentHtml: T.boardHeadHtml(p, "") + overviewContent(p),
+    contentHtml: T.boardHeadHtml(p, "", { nav: "overview" }) + overviewContent(p),
     jsonld: [T.softwareAppJsonld(p)]
   }));
 
@@ -1084,6 +1084,7 @@ for (const p of products) {
          holds one per status and the total, and two totals on one screen is
          how a board stops being trusted. */
       contentHtml: T.boardHeadHtml(p, tools, {
+        nav: sec,
         toolbar: {
           label: T.SECTION_LABELS[sec],
           add: ADD_KINDS[sec] ? { kind: ADD_KINDS[sec], label: ADD_LABELS[sec] || "Add" } : null,
@@ -1114,6 +1115,7 @@ for (const p of products) {
           : `Every ${p.name} ${sec === "bugs" ? "bug report" : "feature request"} currently ${col.label.toLowerCase()}, in full, newest first.`,
         path: `${base}${col.slug}/`,
         contentHtml: T.boardHeadHtml(p, s.tools, {
+          nav: sec,
           toolbar: { label: T.SECTION_LABELS[sec], add: { kind: sec === "bugs" ? "bug" : "feature", label: ADD_LABELS[sec] } },
         }) + s.body,
         jsonld: []
@@ -1132,7 +1134,7 @@ for (const p of products) {
       title: `${post.title} - ${p.name} Support Centre`,
       desc: excerpt(post.descText, 155) || `${post.title} - a ${p.name} ${post.type === "bug" ? "bug report" : "feature request"} on ${T.SITE_NAME}.`,
       path: `/${p.id}/${secDir}/${post.id}/`,
-      contentHtml: T.boardHeadHtml(p, "", { headingTag: "p" }) + T.detailHtml({ post, productRef: p }),
+      contentHtml: T.boardHeadHtml(p, "", { headingTag: "p", nav: secDir }) + T.detailHtml({ post, productRef: p }),
       jsonld: []
     }));
   }
