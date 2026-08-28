@@ -1,5 +1,9 @@
 # Docket releases
 
+## 1.0.5 - 2026-08-28
+
+Improved reliability of the digest job, which now runs cleanly on every schedule.
+
 ## 1.0.4 - 2026-08-28
 
 Every AI and email provider now reaches the jobs that use them, so Grok, OpenRouter, DeepSeek, Postmark, SendGrid, Brevo and Mailgun all write and send as configured. A workflow you delete stays deleted, and docs/workflows.md explains the four scheduled jobs and how to change them.
