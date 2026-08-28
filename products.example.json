@@ -13,7 +13,9 @@
     "  platform  optional pill beside the name: macOS, iOS, Web, API, and so on",
     "  url       optional link back to the product's own site",
     "  accent    the product's colour, used across its board",
-    "  icon      optional path under assets/. Falls back to a coloured monogram",
+    "  icon      optional path under assets/. Falls back to a coloured monogram.",
+    "            Drop a <name>-dark.png beside it and the feedback widget uses",
+    "            that on its dark panel, where a dark mark would disappear",
     "  sections  which boards this product has, in sidebar order"
   ],
 

@@ -20,3 +20,16 @@
   from = "/api/vote"
   to = "/api/vote/"
   status = 301
+
+# The widget runs on the customer's own site and fetches this file from
+# yours, which is a cross-origin read. Without the header the browser
+# blocks it and the widget's search and roadmap fail silently, while the
+# file itself still returns 200 to any check you might run.
+#
+# Open on purpose: this is content already public on your board. The
+# submit endpoint stays locked to widget.allowedOrigins, because that is
+# writing rather than reading.
+[[headers]]
+  for = "/widget-*.json"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"

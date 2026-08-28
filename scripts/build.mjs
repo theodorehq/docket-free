@@ -218,6 +218,16 @@ function loadProduct(reg) {
   const product = {
     ...reg,
     iconPath: iconRel ? "/" + iconRel : "",
+    /* The widget's panel has a dark material a dark mark disappears on, so
+       a light variant can sit beside the main one. Optional and resolved
+       the same way: no file, no field, and the widget uses the light one
+       in both themes. Convention over configuration, because a second
+       registry key for one image is not worth the reading. */
+    iconDarkPath: (() => {
+      if (!iconRel) return "";
+      const dark = iconRel.replace(/(\.[a-z0-9]+)$/i, "-dark$1");
+      return existsSync(join(ROOT, dark)) ? "/" + dark : "";
+    })(),
     iconDarkPath: existsSync(join(ROOT, darkRel)) ? "/" + darkRel : "",
     posts: [],
     changelog: [],

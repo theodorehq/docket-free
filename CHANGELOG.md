@@ -1,5 +1,9 @@
 # Docket releases
 
+## 1.0.6 - 2026-08-28
+
+The feedback widget now takes on your own site's typeface, and shows your product's icon rather than a letter, with a light or dark variant to suit the panel. Its content file is served with the header browsers need to read it from your site.
+
 ## 1.0.5 - 2026-08-28
 
 Improved reliability of the digest job, which now runs cleanly on every schedule.
