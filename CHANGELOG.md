@@ -1,5 +1,9 @@
 # Docket releases
 
+## 1.0.7 - 2026-08-28
+
+The feedback widget now follows your own site's light and dark setting rather than the visitor's computer, and switches with it the moment somebody uses your theme toggle. Your product's dark icon variant follows the same setting.
+
 ## 1.0.6 - 2026-08-28
 
 The feedback widget now takes on your own site's typeface, and shows your product's icon rather than a letter, with a light or dark variant to suit the panel. Its content file is served with the header browsers need to read it from your site.
