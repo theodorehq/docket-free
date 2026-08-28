@@ -1,5 +1,9 @@
 # Docket releases
 
+## 1.0.9 - 2026-08-28
+
+Refined the feedback widget's typography, so every control in the panel sits at its intended size alongside your own site's typeface.
+
 ## 1.0.8 - 2026-08-28
 
 The feedback widget now uses your site's typeface throughout the panel, and your product's mark sits on the panel itself rather than on a tinted tile.
