@@ -1,5 +1,9 @@
 # Docket releases
 
+## 1.0.11 - 2026-09-14
+
+The Powered by Docket credit in the feedback widget now links to the Docket website, so anyone curious about the panel can find out where it came from.
+
 ## 1.0.10 - 2026-09-14
 
 The feedback widget now renders crisper, sharper text on a Mac. Its button shows your product's own colour from the moment the page loads, and each roadmap stage has its own icon, so In Progress, Planned and Under Consideration read at a glance.
