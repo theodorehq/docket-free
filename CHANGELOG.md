@@ -1,5 +1,9 @@
 # Docket releases
 
+## 1.0.10 - 2026-09-14
+
+The feedback widget now renders crisper, sharper text on a Mac. Its button shows your product's own colour from the moment the page loads, and each roadmap stage has its own icon, so In Progress, Planned and Under Consideration read at a glance.
+
 ## 1.0.9 - 2026-08-28
 
 Refined the feedback widget's typography, so every control in the panel sits at its intended size alongside your own site's typeface.
