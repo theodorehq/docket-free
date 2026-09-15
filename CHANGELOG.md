@@ -1,5 +1,9 @@
 # Docket releases
 
+## 1.0.12 - 2026-09-15
+
+Tap the top of the support panel, where your product's icon and name sit, to open your product's support centre overview in a new tab.
+
 ## 1.0.11 - 2026-09-14
 
 The Powered by Docket credit in the feedback widget now links to the Docket website, so anyone curious about the panel can find out where it came from.
